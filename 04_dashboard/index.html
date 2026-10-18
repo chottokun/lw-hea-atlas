@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LW-HEA 自律探索統合ダッシュボード — Autonomous Materials Discovery Suite</title>
+  <!-- Tailwind CSS & Lucide Icons CDN with inline fallback -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Plotly.js for Interactive 2D/3D Scientific Charts -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <!-- Chart.js for Spider / Radar Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Discovery Data -->
+  <script src="data/discovery_data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0b1120;
+      color: #e2e8f0;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .card {
+      background: #131d32;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    }
+    .card-hover:hover {
+      border-color: #38bdf8;
+      transition: all 0.2s ease-in-out;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .nav-tab {
+      padding: 10px 18px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #94a3b8;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .nav-tab:hover {
+      color: #f8fafc;
+    }
+    .nav-tab.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    
+    /* Table styles */
+    th {
+      background-color: #1e293b;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+    td { border-bottom: 1px solid #1e293b; }
+    tr:hover td { background-color: rgba(56, 189, 248, 0.04); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-[#0f172a] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <span class="text-white font-bold text-xl">LW</span>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-bold text-white tracking-tight">LW-HEA Autonomous Discovery Suite</span>
+              <span class="badge bg-sky-950 text-sky-400 border border-sky-800">v4.0 Final</span>
+            </div>
+            <p class="text-xs text-slate-400">超軽量・高比弾性率・超高耐食性 高エントロピー合金 自律探索基盤</p>
+          </div>
+        </div>
+
+        <!-- Quick Sub-Page Links -->
+        <div class="hidden md:flex items-center space-x-2 text-xs">
+          <a href="catalog.html" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition">📋 カタログ専用</a>
+          <a href="possibility_map.html" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition">🌌 未踏空間3D</a>
+          <a href="weighing.html" class="px-3 py-1.5 rounded-md bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border border-emerald-800 transition">⚖️ 実験室秤量</a>
+          <a href="../05_wiki/index.md" class="px-3 py-1.5 rounded-md bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-800 transition">📖 ナレッジWiki</a>
+          <a href="../ref/index.md" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition">📚 文献DB</a>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-2 overflow-x-auto border-t border-slate-800/60" id="mainTabs">
+        <button class="nav-tab active" onclick="switchTab('catalog')">🏆 Top 25 マスターカタログ & ポートフォリオ</button>
+        <button class="nav-tab" onclick="switchTab('landscape')">📊 パレート面 & 可能性空間 (2D/3D)</button>
+        <button class="nav-tab" onclick="switchTab('scenarios')">🎛️ 境界緩和シナリオ & 元素レバー</button>
+        <button class="nav-tab" onclick="switchTab('weighing')">⚖️ 精密インゴット秤量計算機 (VAR揮散補正)</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- AI Exploration Disclaimer Banner -->
+  <div class="bg-amber-950/40 border-b border-amber-800/60 px-4 py-2 text-xs text-amber-300/90">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">⚠️</span>
+        <span><strong>研究開発上の位置付けと免責事項:</strong> 本ダッシュボードは自律型AIエージェントによる計算材料インフォマティクス探索の実験的試みです。記載の合金組成・物理予測値は計算モデルに基づく作業仮説（可能性検討）であり、実機試験前の内容について正確性・完全性を保証するものではありません。</span>
+      </div>
+      <a href="../05_wiki/index.md" class="underline text-amber-200 hover:text-white whitespace-nowrap ml-6 sm:ml-4">検証指針・詳細 (Wiki) →</a>
+    </div>
+  </div>
+
+  <!-- Metric Overview Banner -->
+  <div class="bg-gradient-to-b from-[#0f172a] to-[#0b1120] border-b border-slate-800 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">総スクリーニング数</div>
+          <div class="text-lg font-bold text-white mono mt-0.5">2,750,000+</div>
+          <div class="text-[10px] text-sky-400">Run 1〜12 全空間</div>
+        </div>
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">厳格適合解数</div>
+          <div class="text-lg font-bold text-emerald-400 mono mt-0.5">5,377 点</div>
+          <div class="text-[10px] text-slate-400">Charter全制約合格</div>
+        </div>
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">ポートフォリオ</div>
+          <div class="text-lg font-bold text-indigo-400 mono mt-0.5">7 Tracks</div>
+          <div class="text-[10px] text-slate-400">用途別最適候補群</div>
+        </div>
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">最小達成密度</div>
+          <div class="text-lg font-bold text-amber-400 mono mt-0.5">4.298 <span class="text-xs font-normal text-slate-400">g/cm³</span></div>
+          <div class="text-[10px] text-emerald-400">純チタン比 -4.7%</div>
+        </div>
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">最高比弾性率</div>
+          <div class="text-lg font-bold text-purple-400 mono mt-0.5">31.4 <span class="text-xs font-normal text-slate-400">GPa/ρ</span></div>
+          <div class="text-[10px] text-purple-400">Ti-64比 +22.2%</div>
+        </div>
+        <div class="card p-3">
+          <div class="text-xs text-slate-400">公知特許/文献DB</div>
+          <div class="text-lg font-bold text-pink-400 mono mt-0.5">815 件</div>
+          <div class="text-[10px] text-pink-400">全解 L₁ 距離 ≥ 10%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: Top 25 Master Catalog & Portfolio   -->
+    <!-- ========================================== -->
+    <section id="tab-catalog" class="space-y-6">
+      
+      <!-- Catalog Controls & Filters -->
+      <div class="card p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-slate-400 mr-1">トラック絞り込み:</span>
+          <button class="filter-btn active px-3 py-1 text-xs rounded-md bg-sky-600 text-white" onclick="filterCatalog('all', this)">すべて (24)</button>
+          <button class="filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700" onclick="filterCatalog('Baseline', this)">本命 Baseline</button>
+          <button class="filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700" onclick="filterCatalog('High-Cr', this)">高耐食 High-Cr</button>
+          <button class="filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700" onclick="filterCatalog('Mo', this)">耐熱 Mo添加</button>
+          <button class="filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700" onclick="filterCatalog('Sc', this)">Siフリー Sc系</button>
+          <button class="filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700" onclick="filterCatalog('Scenario', this)">境界緩和シナリオ</button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <input type="text" id="catalogSearch" placeholder="元素・組成検索 (例: Mo, Si, Al33)" onkeyup="searchCatalog()"
+                   class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-48">
+          </div>
+          <button onclick="exportCatalogCsv()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg border border-slate-700 flex items-center space-x-1">
+            <span>📥 CSV出力</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Master Grid & Inspector -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Master Table -->
+        <div class="lg:col-span-2 card overflow-hidden flex flex-col">
+          <div class="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+            <span class="text-xs font-semibold text-slate-300">候補合金一覧 (<span id="visibleCount">24</span> 件表示中)</span>
+            <span class="text-[11px] text-slate-500">行をクリックして右パネルで詳細レーダーと物性を確認</span>
+          </div>
+          <div class="overflow-x-auto flex-1 max-h-[620px]">
+            <table class="w-full text-left border-collapse" id="catalogTable">
+              <thead>
+                <tr>
+                  <th class="p-2.5">ID / トラック</th>
+                  <th class="p-2.5">公称組成 (at%)</th>
+                  <th class="p-2.5 text-right">密度 ρ</th>
+                  <th class="p-2.5 text-right">比弾性率</th>
+                  <th class="p-2.5 text-right">Pugh (B/G)</th>
+                  <th class="p-2.5 text-right">耐食点</th>
+                  <th class="p-2.5 text-right">偏析 σ_Tm</th>
+                  <th class="p-2.5 text-right">新規性 L₁</th>
+                </tr>
+              </thead>
+              <tbody id="catalogTableBody" class="divide-y divide-slate-800 text-xs">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Col: Alloy Inspector & Radar Card -->
+        <div class="card p-5 flex flex-col space-y-4" id="inspectorCard">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="badge bg-sky-950 text-sky-400 border border-sky-800" id="inspTrack">Track 1: Baseline</span>
+              <h3 class="text-lg font-bold text-white mt-1 mono" id="inspId">Track-1_A1</h3>
+              <p class="text-xs text-slate-400 mono mt-0.5" id="inspFormula">Al30 Ti35 V15 Cr10 Nb5 Si5</p>
+            </div>
+            <button onclick="sendToWeighingFromInspector()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md shadow-emerald-900/40 flex items-center space-x-1">
+              <span>⚖️ 秤量計算機へ送る</span>
+            </button>
+          </div>
+
+          <!-- Radar Chart Container -->
+          <div class="relative h-56 w-full flex items-center justify-center bg-slate-900/60 rounded-xl p-2 border border-slate-800">
+            <canvas id="radarChart"></canvas>
+          </div>
+
+          <!-- Physical Property Grid -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">密度 ρ (g/cm³)</span>
+              <span class="font-bold text-white mono text-sm" id="inspRho">4.447</span>
+              <span class="text-[10px] text-emerald-400 ml-1">Charter適合</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">比弾性率 E/ρ (GPa/ρ)</span>
+              <span class="font-bold text-sky-400 mono text-sm" id="inspEoD">29.7</span>
+              <span class="text-[10px] text-slate-400 ml-1">(E = <span id="inspE">132.1</span> GPa)</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">Pugh比 B/G (延性評価)</span>
+              <span class="font-bold text-purple-400 mono text-sm" id="inspPugh">2.237</span>
+              <span class="text-[10px] text-purple-400 ml-1">&gt; 1.75 (高延性)</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">耐食性スコア / PREN</span>
+              <span class="font-bold text-emerald-400 mono text-sm" id="inspCorr">93.8</span>
+              <span class="text-[10px] text-slate-400 ml-1">(PREN: <span id="inspPren">38.0</span>)</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">偏析指数 σ_Tm (K)</span>
+              <span class="font-bold text-amber-400 mono text-sm" id="inspSigma">556.1</span>
+              <span class="text-[10px] text-slate-400 ml-1">&lt; 800K (低偏析)</span>
+            </div>
+            <div class="p-2 rounded bg-slate-900/80 border border-slate-800">
+              <span class="text-slate-400 block text-[10px]">シリサイド析出リスク</span>
+              <span class="font-bold text-slate-300 mono text-sm" id="inspSilicide">0.205</span>
+              <span class="text-[10px] text-amber-400 ml-1">&le; 0.25 (制御下)</span>
+            </div>
+          </div>
+
+          <!-- Novelty & OKF Evidence -->
+          <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 font-semibold">公知文献新規性 (L₁距離):</span>
+              <span class="font-bold text-pink-400 mono" id="inspNovelty">10.0 at% 離脱</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              最寄公知合金: <span class="text-slate-200 mono" id="inspNearest">Al35Ti30V15Cr10Nb10_RHEA</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              推奨製造プロセス: <span class="text-sky-300" id="inspProcess">真空アーク溶解 (VAR) + 1200℃ 均質化溶体化</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: Pareto Landscape (2D/3D Plotly)     -->
+    <!-- ========================================== -->
+    <section id="tab-landscape" class="hidden space-y-6">
+      
+      <!-- Chart Controls -->
+      <div class="card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-4 text-xs">
+          <span class="font-semibold text-slate-300">表示モード:</span>
+          <label class="flex items-center space-x-1 cursor-pointer">
+            <input type="radio" name="plotDim" value="2d" checked onchange="togglePlotDimension('2d')" class="text-sky-500">
+            <span>2D パレート面 (ρ vs E/ρ)</span>
+          </label>
+          <label class="flex items-center space-x-1 cursor-pointer">
+            <input type="radio" name="plotDim" value="3d" onchange="togglePlotDimension('3d')" class="text-sky-500">
+            <span>3D 空間 (ρ vs E/ρ vs 耐食性)</span>
+          </label>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs">
+          <span class="text-slate-400">カラーマップ指標:</span>
+          <select id="colorMetric" onchange="updatePlotData()" class="bg-slate-900 border border-slate-700 text-white rounded px-2 py-1">
+            <option value="corr">耐食性スコア (0-100)</option>
+            <option value="B_G">Pugh比 B/G (延性指標)</option>
+            <option value="pren">耐孔食指数 PREN</option>
+            <option value="sigma_Tm">偏析指数 σ_Tm (K)</option>
+          </select>
+
+          <label class="flex items-center space-x-1 text-slate-300 cursor-pointer">
+            <input type="checkbox" id="showBenchmarks" checked onchange="updatePlotData()" class="rounded text-sky-500">
+            <span>公知ベンチマーク (Ti-64, Cantor等)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Plotly Main Chart -->
+      <div class="card p-4">
+        <div id="mainPlot" style="width: 100%; height: 600px;"></div>
+      </div>
+
+      <!-- Landscape Insights -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="card p-4">
+          <h4 class="font-bold text-sky-400 mb-1">ホワイトスペース Island 1: 超軽量・低密度域</h4>
+          <p class="text-slate-400 leading-relaxed">
+            ρ ≤ 4.35 g/cm³ のフロンティア。Al 33〜35 at% のハイ・アルミニウム骨格に微量 Si/Sc を添加し、B2ナノ相析出により剛性 29+ GPa/ρ を維持する未踏領域。
+          </p>
+        </div>
+        <div class="card p-4">
+          <h4 class="font-bold text-emerald-400 mb-1">ホワイトスペース Island 2: 極限不動態域</h4>
+          <p class="text-slate-400 leading-relaxed">
+            Cr 15 at% + Nb 5 at% + Si 5 at% の重畳型不活性皮膜（TiO₂-Cr₂O₃-Al₂O₃-SiO₂）。log Icorr ≤ -8.0 を達成し、海洋・過酷塩化物環境でチタン合金を超える不動態安定度を誇る。
+          </p>
+        </div>
+        <div class="card p-4">
+          <h4 class="font-bold text-purple-400 mb-1">境界緩和シナリオ: 純バルブ金属5元系</h4>
+          <p class="text-slate-400 leading-relaxed">
+            密度制約を 4.50 → 4.65 g/cm³ にわずか 3.3% 緩和することで、Siフリーの Ti-Al-V-Cr-Nb 5元系が即座に解禁（505候補）。シリサイド脆化リスクが完全に消失する。
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: Scenario Simulator & Elemental Levers-->
+    <!-- ========================================== -->
+    <section id="tab-scenarios" class="hidden space-y-6">
+      
+      <!-- Boundary Relaxation Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="card p-4 border-l-4 border-l-sky-500">
+          <span class="badge bg-sky-950 text-sky-400 mb-2">Scenario A</span>
+          <h4 class="font-bold text-white text-sm">密度微緩和 (ρ ≤ 4.65 g/cm³)</h4>
+          <p class="text-xs text-slate-400 mt-1">Si/Sc不要の完全バルブ金属5元系。505候補が解禁。</p>
+          <div class="mt-3 text-xs bg-slate-900/60 p-2 rounded mono text-slate-300">
+            Al25 Ti35 V15 Cr15 Nb10<br>
+            <span class="text-sky-400">ρ=4.62, E/ρ=29.2, B/G=2.26</span>
+          </div>
+        </div>
+
+        <div class="card p-4 border-l-4 border-l-emerald-500">
+          <span class="badge bg-emerald-950 text-emerald-400 mb-2">Scenario B</span>
+          <h4 class="font-bold text-white text-sm">Si微量添加 (2.0〜3.5 at%)</h4>
+          <p class="text-xs text-slate-400 mt-1">シリサイド析出リスクを40%低減し、ナノ整合析出を狙う。</p>
+          <div class="mt-3 text-xs bg-slate-900/60 p-2 rounded mono text-slate-300">
+            Al31 Ti35 V15 Cr11 Nb5 Si3<br>
+            <span class="text-emerald-400">ρ=4.42, E/ρ=29.6, Silicide=0.12</span>
+          </div>
+        </div>
+
+        <div class="card p-4 border-l-4 border-l-purple-500">
+          <span class="badge bg-purple-950 text-purple-400 mb-2">Scenario C</span>
+          <h4 class="font-bold text-white text-sm">Sc系Siフリー超高靱性</h4>
+          <p class="text-xs text-slate-400 mt-1">Si脆化ゼロ、原子半径整合性が極めて良好。希土類高コストが制約。</p>
+          <div class="mt-3 text-xs bg-slate-900/60 p-2 rounded mono text-slate-300">
+            Al30 Ti30 V15 Cr15 Sc10<br>
+            <span class="text-purple-400">ρ=4.38, E/ρ=28.9, B/G=2.45</span>
+          </div>
+        </div>
+
+        <div class="card p-4 border-l-4 border-l-amber-500">
+          <span class="badge bg-amber-950 text-amber-400 mb-2">Scenario D</span>
+          <h4 class="font-bold text-white text-sm">Mo微量耐熱・高剛性</h4>
+          <p class="text-xs text-slate-400 mt-1">Mo 2〜5 at% でヤング率 135+ GPa、PREN 45+、耐クリープ強化。</p>
+          <div class="mt-3 text-xs bg-slate-900/60 p-2 rounded mono text-slate-300">
+            Al32 Ti35 V10 Cr12 Nb6 Mo5<br>
+            <span class="text-amber-400">ρ=4.49, E/ρ=30.4, PREN=48.0</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Elemental Levers Matrix -->
+      <div class="card p-5 space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-white">元素レバー感度マトリクス (Elemental Sensitivity Levers)</h3>
+          <p class="text-xs text-slate-400 mt-0.5">
+            各元素を 1 at% 増減させた際の主要物性への偏微分係数 (∂Property/∂cᵢ) と材料設計上の機能。
+          </p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr>
+                <th class="p-2.5">元素</th>
+                <th class="p-2.5">密度感度 (∂ρ/∂cᵢ)</th>
+                <th class="p-2.5">剛性寄与 (E/ρ)</th>
+                <th class="p-2.5">耐食性寄与 (corr)</th>
+                <th class="p-2.5">延性寄与 (B/G)</th>
+                <th class="p-2.5">偏析感度 (σ_Tm)</th>
+                <th class="p-2.5">設計上の主たる役割 & トレードオフ</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800" id="leversTableBody">
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Al (アルミニウム)</td>
+                <td class="p-2.5 font-bold text-emerald-400 mono">-0.027 g/cm³</td>
+                <td class="p-2.5 text-sky-400 mono">+0.15 GPa/ρ</td>
+                <td class="p-2.5 text-slate-300 mono">+0.42</td>
+                <td class="p-2.5 text-rose-400 mono">-0.018 (脆化注意)</td>
+                <td class="p-2.5 text-amber-400 mono">+12.5 K</td>
+                <td class="p-2.5 text-slate-400">最大密度低減レバー。35 at%を超えると脆性金属間化合物相が激増。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Ti (チタン)</td>
+                <td class="p-2.5 text-slate-300 mono">-0.001 g/cm³</td>
+                <td class="p-2.5 text-slate-300 mono">-0.05 GPa/ρ</td>
+                <td class="p-2.5 text-emerald-400 mono">+0.68 (TiO₂被膜)</td>
+                <td class="p-2.5 text-purple-400 mono">+0.012</td>
+                <td class="p-2.5 text-emerald-400 mono">-5.0 K (偏析緩和)</td>
+                <td class="p-2.5 text-slate-400">マトリクス安定化の主役。TiO₂強固不動態皮膜の主骨格。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">V (バナジウム)</td>
+                <td class="p-2.5 text-amber-400 mono">+0.014 g/cm³</td>
+                <td class="p-2.5 text-sky-400 mono">+0.18 GPa/ρ</td>
+                <td class="p-2.5 text-slate-400 mono">-0.25 (優先溶解性)</td>
+                <td class="p-2.5 text-purple-400 mono">+0.015</td>
+                <td class="p-2.5 text-emerald-400 mono">-3.5 K</td>
+                <td class="p-2.5 text-slate-400">p-d混成による剛性向上とBCC安定化。多量添加は耐食性を低下。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Cr (クロム)</td>
+                <td class="p-2.5 text-amber-400 mono">+0.018 g/cm³</td>
+                <td class="p-2.5 text-sky-400 mono">+0.22 GPa/ρ</td>
+                <td class="p-2.5 font-bold text-emerald-400 mono">+1.45 (Cr₂O₃)</td>
+                <td class="p-2.5 text-rose-400 mono">-0.008</td>
+                <td class="p-2.5 text-slate-300 mono">+2.0 K</td>
+                <td class="p-2.5 text-slate-400">最強の耐食性向上レバー。10〜15 at%でCr₂O₃バリヤー被膜を形成。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Nb (ニオブ)</td>
+                <td class="p-2.5 font-bold text-rose-400 mono">+0.045 g/cm³</td>
+                <td class="p-2.5 text-sky-400 mono">+0.28 GPa/ρ</td>
+                <td class="p-2.5 text-emerald-400 mono">+0.85 (Nb₂O₅)</td>
+                <td class="p-2.5 font-bold text-purple-400 mono">+0.025 (延性改善)</td>
+                <td class="p-2.5 text-rose-400 mono">+25.0 K (偏析増)</td>
+                <td class="p-2.5 text-slate-400">比弾性率と延性を大幅改善するが、高密度のため添加量は≤10 at%に厳格制限。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Si (ケイ素)</td>
+                <td class="p-2.5 font-bold text-emerald-400 mono">-0.038 g/cm³</td>
+                <td class="p-2.5 font-bold text-sky-400 mono">+0.35 GPa/ρ</td>
+                <td class="p-2.5 text-emerald-400 mono">+0.50 (SiO₂)</td>
+                <td class="p-2.5 font-bold text-rose-500 mono">-0.045 (シリサイド脆化)</td>
+                <td class="p-2.5 text-amber-400 mono">+18.0 K</td>
+                <td class="p-2.5 text-slate-400">6元系化の鍵元素。2〜5 at%で超軽量化と剛性爆発をもたらすが5%厳格上限。</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold text-white mono">Mo (モリブデン)</td>
+                <td class="p-2.5 font-bold text-rose-500 mono">+0.058 g/cm³</td>
+                <td class="p-2.5 text-sky-400 mono">+0.30 GPa/ρ</td>
+                <td class="p-2.5 font-bold text-emerald-400 mono">+1.20 (耐孔食PREN)</td>
+                <td class="p-2.5 text-purple-400 mono">+0.010</td>
+                <td class="p-2.5 text-rose-500 mono">+32.0 K</td>
+                <td class="p-2.5 text-slate-400">耐孔食性PRENを劇的向上。重元素のため2〜5 at%の微量ドープに限定。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ablation Rejection Breakdown -->
+      <div class="card p-5 space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-white">熱力学アブレーション解析 (なぜ99.8%の合金が却下されるのか)</h3>
+          <p class="text-xs text-slate-400 mt-0.5">
+            探索空間 2,750,000 点に対する各物理記述子フィルターの脱落寄与率。
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">① 密度制約違反 (ρ &gt; 4.50)</span>
+            <span class="text-rose-400 font-bold text-base mono">68.4 %</span>
+            <p class="text-[10px] text-slate-500 mt-1">Nb, Mo, Crの過多による過積載が最大の脱落原因。</p>
+          </div>
+          <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">② 単相BCC/原子寸法差 (δ &gt; 6.6%)</span>
+            <span class="text-amber-400 font-bold text-base mono">18.2 %</span>
+            <p class="text-[10px] text-slate-500 mt-1">Zrや希土類の過大原子半径による歪み格子崩壊。</p>
+          </div>
+          <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">③ ガルバニック腐食 / logI違反</span>
+            <span class="text-purple-400 font-bold text-base mono">9.6 %</span>
+            <p class="text-[10px] text-slate-500 mt-1">Mg, Li等の活性元素混入による局所電位差腐食。</p>
+          </div>
+          <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">④ 比弾性率不足 (E/ρ &le; 25.0)</span>
+            <span class="text-sky-400 font-bold text-base mono">3.6 %</span>
+            <p class="text-[10px] text-slate-500 mt-1">p-d混成ボンド（Al-TM）の不足による剛性低下。</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: Precision Batch Weighing Calculator -->
+    <!-- ========================================== -->
+    <section id="tab-weighing" class="hidden space-y-6">
+      
+      <!-- Calculator Controls -->
+      <div class="card p-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+              <span>⚖️ 真空アーク溶解 (VAR) インゴット秤量計算機</span>
+              <span class="badge bg-emerald-950 text-emerald-400 border border-emerald-800">実験室現場対応</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              各元素の高純度原料（チップ／ペレット）秤量値および揮発補正を精密計算します。
+            </p>
+          </div>
+
+          <!-- Target Ingot Mass Selector -->
+          <div class="flex items-center space-x-3 text-xs">
+            <span class="text-slate-300 font-semibold">インゴット目標重量:</span>
+            <div class="flex items-center space-x-1">
+              <button onclick="setBatchMass(50)" class="mass-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">50 g</button>
+              <button onclick="setBatchMass(100)" class="mass-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold">100 g</button>
+              <button onclick="setBatchMass(200)" class="mass-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">200 g</button>
+              <div class="flex items-center ml-2">
+                <input type="number" id="customBatchMass" value="100.0" step="1.0" min="5" max="5000" onchange="customMassChanged()"
+                       class="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-right text-white mono">
+                <span class="ml-1 text-slate-400">g</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alloy Selection Dropdown & Evaporation Toggle -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1 font-semibold">対象合金の選択:</label>
+            <select id="weighingAlloySelect" onchange="onWeighingAlloyChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white mono">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="flex flex-col justify-center">
+            <label class="flex items-center space-x-2 cursor-pointer mt-3">
+              <input type="checkbox" id="evapCompensation" checked onchange="recalculateWeighing()" class="rounded text-emerald-500 w-4 h-4">
+              <span class="text-slate-200 font-semibold">VAR溶解 揮発ロス補正を適用</span>
+            </label>
+            <span class="text-[11px] text-slate-500 mt-0.5">Al (+1.0 wt%), Cr (+0.5 wt%) の蒸気圧揮散を事前補填</span>
+          </div>
+
+          <div class="flex items-center justify-end space-x-2 pt-3">
+            <button onclick="exportWeighingCsv()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 flex items-center space-x-1">
+              <span>📥 秤量指示書 CSV出力</span>
+            </button>
+            <button onclick="window.print()" class="px-3 py-2 bg-sky-700 hover:bg-sky-600 text-white rounded-lg flex items-center space-x-1">
+              <span>🖨️ 印刷</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weighing Result Table -->
+      <div class="card overflow-hidden">
+        <div class="p-3 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">
+            原材料秤量指示テーブル (<span id="weighingFormulaDisplay" class="mono text-sky-400">Al30 Ti35 V15 Cr10 Nb5 Si5</span>)
+          </span>
+          <span class="text-xs text-slate-400">目標仕込み総量: <span id="weighingTotalMassDisplay" class="mono font-bold text-white">100.00</span> g</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr>
+                <th class="p-3">済</th>
+                <th class="p-3">元素</th>
+                <th class="p-3">推奨原料形態</th>
+                <th class="p-3 text-right">原子量 (g/mol)</th>
+                <th class="p-3 text-right">原子比 (at%)</th>
+                <th class="p-3 text-right">理論質量比 (wt%)</th>
+                <th class="p-3 text-right">揮発補正後 (wt%)</th>
+                <th class="p-3 text-right text-emerald-400 font-bold">必要秤量値 (g)</th>
+                <th class="p-3">実測秤量チェックメモ</th>
+              </tr>
+            </thead>
+            <tbody id="weighingTableBody" class="divide-y divide-slate-800">
+              <!-- Dynamically populated -->
+            </tbody>
+            <tfoot class="bg-slate-900/80 font-bold border-t border-slate-700 text-xs">
+              <tr>
+                <td class="p-3"></td>
+                <td class="p-3 text-white" colspan="3">合計 (Total)</td>
+                <td class="p-3 text-right mono text-white" id="weighTotalAt">100.00 %</td>
+                <td class="p-3 text-right mono text-slate-400" id="weighTotalWt">100.00 %</td>
+                <td class="p-3 text-right mono text-sky-400" id="weighTotalAdjWt">100.00 %</td>
+                <td class="p-3 text-right mono text-emerald-400 text-sm" id="weighTotalG">100.00 g</td>
+                <td class="p-3 text-slate-400 text-[11px]">誤差許容: ±0.02 g 以内</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Laboratory Safety & Melting Guidelines -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="card p-4 space-y-2">
+          <h4 class="font-bold text-amber-400 flex items-center space-x-1">
+            <span>⚠️ 真空アーク溶解 (VAR) 作業上の注意</span>
+          </h4>
+          <ul class="text-slate-400 space-y-1 list-disc list-inside">
+            <li>真空チャンバー到達真空度：<span class="mono text-white">5.0 × 10⁻³ Pa</span> 以下を確認後、高純度Ar（99.999%）を置換。</li>
+            <li>ゲッター（高純度Tiインゴット）を本合金溶解前に2回先溶させ、チャンバー内の残留酸素・窒素を完全吸着。</li>
+            <li>SiおよびAlペレットは底部、高融点金属（Nb, Mo, V）は中央部に配置し、アーク直噴によるAl/Siの吹き飛びを防止。</li>
+            <li>均質化のため、インゴットを裏返して最低4回（推奨6回）の反転再溶解を実施すること。</li>
+          </ul>
+        </div>
+
+        <div class="card p-4 space-y-2">
+          <h4 class="font-bold text-sky-400 flex items-center space-x-1">
+            <span>🔬 熱処理・評価プロトコル</span>
+          </h4>
+          <ul class="text-slate-400 space-y-1 list-disc list-inside">
+            <li>溶体化熱処理：石英管に真空封入（Ar雰囲気）、<span class="mono text-white">1200℃ × 24時間</span> 保持後、氷水焼入れ。</li>
+            <li>密度測定：アルキメデス法（JIS Z 8807準拠、脱イオン水使用）にて3回測定し平均値を算出。</li>
+            <li>超音波パルスエコー法（ASTM E494）にて縦波・横波音速を測定し、ヤング率 E および Pugh比 B/G を決定。</li>
+            <li>動電位分極試験：3.5 wt% NaCl水溶液中（脱気）、走査速度 1 mV/s にて腐食電流密度 Icorr を評価。</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-[#0f172a] py-8 text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        <div>
+          <p class="font-bold text-slate-300">LW-HEA Autonomous Discovery Suite & Knowledge Atlas</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Charter Constraints: ρ ≤ 4.50 g/cm³, E/ρ &gt; 25 GPa·g⁻¹cm³, log₁₀(Icorr) ≤ -7.0, ΔS ≥ 1.5R, δ ≤ 6.6%, Ω ≥ 1.1</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-slate-400">
+          <a href="index.html" class="hover:text-sky-400">🏠 総合ポータル</a>
+          <a href="catalog.html" class="hover:text-sky-400">📋 カタログ一覧</a>
+          <a href="possibility_map.html" class="hover:text-sky-400">🌌 3D未踏空間</a>
+          <a href="weighing.html" class="hover:text-emerald-400">⚖️ 秤量計算機</a>
+          <a href="../05_wiki/index.md" class="hover:text-indigo-400 font-semibold">📖 ナレッジWiki</a>
+          <a href="../ref/index.md" class="hover:text-pink-400 font-semibold">📚 文献DB (580件)</a>
+          <a href="../README.md" class="hover:text-slate-300">📄 README</a>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2">
+        <div class="flex items-center space-x-3">
+          <span>Wikiクイックアクセス:</span>
+          <a href="../05_wiki/lw-hea-design.md" class="hover:text-slate-400 underline">設計指針・PDM理論</a>
+          <a href="../05_wiki/pareto-candidates.md" class="hover:text-slate-400 underline">7トラック最適解</a>
+          <a href="../05_wiki/ablation-and-family-study.md" class="hover:text-slate-400 underline">アブレーション・第2不可能性定理</a>
+          <a href="../05_wiki/experimental-protocol.md" class="hover:text-slate-400 underline">溶製実験プロトコル</a>
+          <a href="../05_wiki/fto-analysis.md" class="hover:text-slate-400 underline">特許FTOクリアランス</a>
+        </div>
+        <div>
+          <span>Licensed under CC BY 4.0 & MIT</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    // State management
+    let state = {
+      currentTab: 'catalog',
+      catalogData: [],
+      selectedAlloy: null,
+      radarChartInstance: null,
+      batchMass: 100.0,
+      plotDimension: '2d',
+      atomicMasses: {
+        "Al": 26.982, "Ti": 47.867, "V": 50.942, "Cr": 51.996,
+        "Nb": 92.906, "Si": 28.085, "Mo": 95.95,  "Sc": 44.956,
+        "Zr": 91.224, "Mg": 24.305, "Mn": 54.938
+      },
+      rawForms: {
+        "Al": "高純度ペレット (4N)",
+        "Ti": "高純度スポンジ/チップ (4N)",
+        "V":  "高純度バナジウム粒 (3N5)",
+        "Cr": "電解クロムフレーク (4N)",
+        "Nb": "高純度ニオブチップ (3N5)",
+        "Si": "半導体グレード単結晶片 (5N)",
+        "Mo": "高純度モリブデンペレット (3N8)",
+        "Sc": "高純度スカンジウム蒸留ピース (3N)"
+      }
+    };
+
+    // Initialize application
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.DISCOVERY_DATA) {
+        state.catalogData = window.DISCOVERY_DATA.top25_catalog || [];
+        initCatalog();
+        initWeighingSelector();
+        initPlot();
+        selectAlloy(state.catalogData[0]);
+      } else {
+        console.error("DISCOVERY_DATA is not loaded.");
+      }
+    });
+
+    // Tab Switching
+    function switchTab(tabId) {
+      state.currentTab = tabId;
+      document.querySelectorAll('#mainTabs .nav-tab').forEach(tab => tab.classList.remove('active'));
+      const activeIdx = ['catalog', 'landscape', 'scenarios', 'weighing'].indexOf(tabId);
+      if (activeIdx >= 0) {
+        document.querySelectorAll('#mainTabs .nav-tab')[activeIdx].classList.add('active');
+      }
+
+      ['catalog', 'landscape', 'scenarios', 'weighing'].forEach(id => {
+        const sec = document.getElementById(`tab-${id}`);
+        if (sec) sec.classList.toggle('hidden', id !== tabId);
+      });
+
+      if (tabId === 'landscape') {
+        setTimeout(() => { Plotly.Plots.resize('mainPlot'); }, 50);
+      }
+    }
+
+    // Catalog Table Population & Filter
+    function initCatalog() {
+      renderCatalogTable(state.catalogData);
+    }
+
+    function renderCatalogTable(items) {
+      const tbody = document.getElementById('catalogTableBody');
+      tbody.innerHTML = '';
+      document.getElementById('visibleCount').textContent = items.length;
+
+      items.forEach(alloy => {
+        const tr = document.createElement('tr');
+        tr.className = "cursor-pointer hover:bg-slate-800/60 transition " + 
+          (state.selectedAlloy && state.selectedAlloy.id === alloy.id ? "bg-sky-950/40 border-l-2 border-sky-400" : "");
+        tr.onclick = () => selectAlloy(alloy);
+
+        tr.innerHTML = `
+          <td class="p-2.5">
+            <span class="font-bold text-white mono">${alloy.id}</span>
+            <div class="text-[10px] text-slate-400">${alloy.track.split(':')[0]}</div>
+          </td>
+          <td class="p-2.5 mono text-sky-300 font-medium">${alloy.formula}</td>
+          <td class="p-2.5 text-right mono ${alloy.rho <= 4.5 ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${alloy.rho.toFixed(3)}</td>
+          <td class="p-2.5 text-right mono font-bold text-white">${alloy.EoD.toFixed(1)}</td>
+          <td class="p-2.5 text-right mono text-purple-400 font-semibold">${alloy.B_G.toFixed(2)}</td>
+          <td class="p-2.5 text-right mono text-emerald-400 font-semibold">${alloy.corr.toFixed(1)}</td>
+          <td class="p-2.5 text-right mono text-slate-300">${alloy.sigma_Tm.toFixed(0)}</td>
+          <td class="p-2.5 text-right mono text-pink-400">${alloy.novelty_dist.toFixed(1)}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterCatalog(category, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = "filter-btn px-3 py-1 text-xs rounded-md bg-slate-800 text-slate-300 hover:bg-slate-700";
+      });
+      btn.className = "filter-btn active px-3 py-1 text-xs rounded-md bg-sky-600 text-white font-bold";
+
+      if (category === 'all') {
+        renderCatalogTable(state.catalogData);
+      } else {
+        const filtered = state.catalogData.filter(a => a.track.includes(category) || a.category.includes(category));
+        renderCatalogTable(filtered);
+      }
+    }
+
+    function searchCatalog() {
+      const q = document.getElementById('catalogSearch').value.toLowerCase().trim();
+      if (!q) {
+        renderCatalogTable(state.catalogData);
+        return;
+      }
+      const filtered = state.catalogData.filter(a => 
+        a.id.toLowerCase().includes(q) || 
+        a.formula.toLowerCase().includes(q) || 
+        a.track.toLowerCase().includes(q)
+      );
+      renderCatalogTable(filtered);
+    }
+
+    // Select Alloy & Update Inspector
+    function selectAlloy(alloy) {
+      state.selectedAlloy = alloy;
+      
+      // Update DOM
+      document.getElementById('inspTrack').textContent = alloy.track;
+      document.getElementById('inspId').textContent = alloy.id;
+      document.getElementById('inspFormula').textContent = alloy.formula;
+      document.getElementById('inspRho').textContent = alloy.rho.toFixed(3);
+      document.getElementById('inspEoD').textContent = alloy.EoD.toFixed(1);
+      document.getElementById('inspE').textContent = alloy.E.toFixed(1);
+      document.getElementById('inspPugh').textContent = alloy.B_G.toFixed(3);
+      document.getElementById('inspCorr').textContent = alloy.corr.toFixed(1);
+      document.getElementById('inspPren').textContent = alloy.pren.toFixed(1);
+      document.getElementById('inspSigma').textContent = alloy.sigma_Tm.toFixed(1);
+      document.getElementById('inspSilicide').textContent = alloy.silicide_risk.toFixed(3);
+      document.getElementById('inspNovelty').textContent = `${alloy.novelty_dist.toFixed(1)} at% 離脱`;
+      document.getElementById('inspNearest').textContent = alloy.nearest_known;
+      
+      // Update Radar Chart
+      updateRadarChart(alloy);
+
+      // Highlight in table
+      document.querySelectorAll('#catalogTableBody tr').forEach(tr => {
+        tr.classList.remove('bg-sky-950/40', 'border-l-2', 'border-sky-400');
+      });
+      const rows = document.querySelectorAll('#catalogTableBody tr');
+      rows.forEach(tr => {
+        if (tr.querySelector('.mono') && tr.querySelector('.mono').textContent === alloy.id) {
+          tr.classList.add('bg-sky-950/40', 'border-l-2', 'border-sky-400');
+        }
+      });
+    }
+
+    // Radar Chart Logic (Chart.js)
+    function updateRadarChart(alloy) {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      const radar = alloy.radar || {
+        density_score: 80, stiffness_score: 85, corrosion_score: 90,
+        ductility_score: 85, segregation_res: 75, novelty_score: 80
+      };
+
+      const data = {
+        labels: ['低密度', '比剛性', '耐食性', '延性(Pugh)', '耐偏析性', '公知新規性'],
+        datasets: [{
+          label: alloy.id,
+          data: [
+            radar.density_score,
+            radar.stiffness_score,
+            radar.corrosion_score,
+            radar.ductility_score,
+            radar.segregation_res,
+            radar.novelty_score
+          ],
+          fill: true,
+          backgroundColor: 'rgba(56, 189, 248, 0.25)',
+          borderColor: '#38bdf8',
+          pointBackgroundColor: '#38bdf8',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#38bdf8'
+        }]
+      };
+
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: { color: '#1e293b' },
+            grid: { color: '#1e293b' },
+            pointLabels: { color: '#94a3b8', font: { size: 10 } },
+            ticks: { display: false, min: 0, max: 100 }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      };
+
+      if (state.radarChartInstance) {
+        state.radarChartInstance.destroy();
+      }
+      state.radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: data,
+        options: options
+      });
+    }
+
+    // Jump from Inspector to Weighing Calculator
+    function sendToWeighingFromInspector() {
+      if (!state.selectedAlloy) return;
+      document.getElementById('weighingAlloySelect').value = state.selectedAlloy.id;
+      onWeighingAlloyChange();
+      switchTab('weighing');
+    }
+
+    // ==========================================
+    // Weighing Calculator Logic
+    // ==========================================
+    function initWeighingSelector() {
+      const select = document.getElementById('weighingAlloySelect');
+      select.innerHTML = '';
+      state.catalogData.forEach(alloy => {
+        const opt = document.createElement('option');
+        opt.value = alloy.id;
+        opt.textContent = `${alloy.id} — ${alloy.formula} (${alloy.track.split(':')[0]})`;
+        select.appendChild(opt);
+      });
+      select.value = state.catalogData[0].id;
+      recalculateWeighing();
+    }
+
+    function onWeighingAlloyChange() {
+      const selectedId = document.getElementById('weighingAlloySelect').value;
+      const alloy = state.catalogData.find(a => a.id === selectedId);
+      if (alloy) {
+        document.getElementById('weighingFormulaDisplay').textContent = alloy.formula;
+        recalculateWeighing();
+      }
+    }
+
+    function setBatchMass(mass) {
+      state.batchMass = parseFloat(mass);
+      document.getElementById('customBatchMass').value = mass.toFixed(1);
+      document.querySelectorAll('.mass-btn').forEach(btn => {
+        btn.className = "mass-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300";
+      });
+      if (mass === 50) document.querySelectorAll('.mass-btn')[0].className = "mass-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold";
+      if (mass === 100) document.querySelectorAll('.mass-btn')[1].className = "mass-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold";
+      if (mass === 200) document.querySelectorAll('.mass-btn')[2].className = "mass-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold";
+      recalculateWeighing();
+    }
+
+    function customMassChanged() {
+      const val = parseFloat(document.getElementById('customBatchMass').value);
+      if (!isNaN(val) && val > 0) {
+        state.batchMass = val;
+        document.querySelectorAll('.mass-btn').forEach(btn => {
+          btn.className = "mass-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300";
+        });
+        recalculateWeighing();
+      }
+    }
+
+    function recalculateWeighing() {
+      const selectedId = document.getElementById('weighingAlloySelect').value;
+      const alloy = state.catalogData.find(a => a.id === selectedId) || state.catalogData[0];
+      const comp = alloy.comp;
+      const applyEvap = document.getElementById('evapCompensation').checked;
+
+      document.getElementById('weighingTotalMassDisplay').textContent = state.batchMass.toFixed(2);
+
+      // Compute theoretical weights
+      let totalMolarMass = 0;
+      const rows = [];
+
+      for (const el in comp) {
+        const at = comp[el];
+        const m = state.atomicMasses[el] || 50.0;
+        const massPart = at * m;
+        totalMolarMass += massPart;
+        rows.push({
+          el: el,
+          at: at,
+          atomicMass: m,
+          rawForm: state.rawForms[el] || "高純度ペレット (4N)",
+          massPart: massPart
+        });
+      }
+
+      // Compute theoretical wt%
+      rows.forEach(r => {
+        r.theoryWt = (r.massPart / totalMolarMass) * 100.0;
+      });
+
+      // Apply Evaporation Compensation (Al +1.0 wt%, Cr +0.5 wt%)
+      rows.forEach(r => {
+        r.adjWt = r.theoryWt;
+        if (applyEvap) {
+          if (r.el === 'Al') r.adjWt += 1.0;
+          if (r.el === 'Cr') r.adjWt += 0.5;
+        }
+      });
+
+      // Re-normalize adjusted wt% to 100%
+      const adjTotal = rows.reduce((acc, r) => acc + r.adjWt, 0);
+      rows.forEach(r => {
+        r.finalWt = (r.adjWt / adjTotal) * 100.0;
+        r.weighG = (r.finalWt / 100.0) * state.batchMass;
+      });
+
+      // Render Table
+      const tbody = document.getElementById('weighingTableBody');
+      tbody.innerHTML = '';
+      let sumWeighG = 0;
+
+      rows.forEach((r, idx) => {
+        sumWeighG += r.weighG;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-3">
+            <input type="checkbox" id="chk_${r.el}" class="rounded text-emerald-500 w-4 h-4 cursor-pointer" onchange="toggleCheckRow(this)">
+          </td>
+          <td class="p-3 font-bold text-white mono text-sm">${r.el}</td>
+          <td class="p-3 text-slate-400 text-[11px]">${r.rawForm}</td>
+          <td class="p-3 text-right mono text-slate-400">${r.atomicMass.toFixed(3)}</td>
+          <td class="p-3 text-right mono text-sky-400 font-semibold">${r.at.toFixed(1)} %</td>
+          <td class="p-3 text-right mono text-slate-300">${r.theoryWt.toFixed(2)} %</td>
+          <td class="p-3 text-right mono ${applyEvap && (r.el === 'Al' || r.el === 'Cr') ? 'text-amber-400 font-bold' : 'text-slate-300'}">
+            ${r.finalWt.toFixed(2)} %
+          </td>
+          <td class="p-3 text-right mono font-bold text-emerald-400 text-sm bg-emerald-950/20">
+            ${r.weighG.toFixed(3)} g
+          </td>
+          <td class="p-3">
+            <input type="text" placeholder="実測値記入" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-white w-24 mono">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('weighTotalG').textContent = sumWeighG.toFixed(2) + ' g';
+    }
+
+    function toggleCheckRow(chk) {
+      const tr = chk.closest('tr');
+      if (chk.checked) {
+        tr.classList.add('bg-emerald-950/20');
+      } else {
+        tr.classList.remove('bg-emerald-950/20');
+      }
+    }
+
+    function exportWeighingCsv() {
+      const selectedId = document.getElementById('weighingAlloySelect').value;
+      const alloy = state.catalogData.find(a => a.id === selectedId) || state.catalogData[0];
+      let csv = `LW-HEA 精密秤量指示書\n`;
+      csv += `合金ID,${alloy.id}\n公称組成,${alloy.formula}\n目標インゴット重量,${state.batchMass.toFixed(2)} g\n\n`;
+      csv += `元素,推奨原料形態,原子量(g/mol),原子比(at%),理論比(wt%),秤量比(wt%),必要秤量値(g),実測記録(g)\n`;
+
+      const rows = document.querySelectorAll('#weighingTableBody tr');
+      rows.forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        const el = tds[1].textContent.trim();
+        const form = tds[2].textContent.trim();
+        const mass = tds[3].textContent.trim();
+        const at = tds[4].textContent.trim();
+        const thWt = tds[5].textContent.trim();
+        const finWt = tds[6].textContent.trim();
+        const weighG = tds[7].textContent.trim();
+        csv += `"${el}","${form}",${mass},${at},${thWt},${finWt},${weighG},\n`;
+      });
+
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weighing_recipe_${alloy.id}_${state.batchMass}g.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportCatalogCsv() {
+      let csv = "ID,Track,Formula,rho_g_cm3,E_GPa,EoD_GPa_per_rho,Pugh_B_G,poisson,corr_score,logI_A_cm2,PREN,delta_pct,Omega_net,sigma_Tm_K,silicide_risk,Novelty_Dist_L1_pct,Nearest_Known\n";
+      state.catalogData.forEach(a => {
+        csv += `"${a.id}","${a.track}","${a.formula}",${a.rho},${a.E},${a.EoD},${a.B_G},${a.poisson},${a.corr},${a.logI},${a.pren},${a.delta},${a.Omega},${a.sigma_Tm},${a.silicide_risk},${a.novelty_dist},"${a.nearest_known}"\n`;
+      });
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `LW_HEA_Top25_Catalog.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==========================================
+    // Interactive Plotly Chart Logic
+    // ==========================================
+    function initPlot() {
+      updatePlotData();
+    }
+
+    function togglePlotDimension(dim) {
+      state.plotDimension = dim;
+      updatePlotData();
+    }
+
+    function updatePlotData() {
+      const feasibles = window.DISCOVERY_DATA.feasible_points || [];
+      const top25 = window.DISCOVERY_DATA.top25_catalog || [];
+      const benchmarks = window.DISCOVERY_DATA.benchmarks || [];
+      const colorMetric = document.getElementById('colorMetric').value;
+      const showBench = document.getElementById('showBenchmarks').checked;
+
+      const traces = [];
+
+      // Trace 1: Charter Feasible Background Cloud
+      if (state.plotDimension === '2d') {
+        traces.push({
+          x: feasibles.map(p => p.rho),
+          y: feasibles.map(p => p.EoD),
+          text: feasibles.map(p => `${p.formula}<br>ρ: ${p.rho} g/cm³<br>E/ρ: ${p.EoD}<br>耐食: ${p.corr}<br>Pugh: ${p.B_G}`),
+          mode: 'markers',
+          type: 'scatter',
+          name: '実行可能解群 (Feasible Cloud)',
+          marker: {
+            size: 6,
+            color: feasibles.map(p => p[colorMetric] || 50),
+            colorscale: 'Blues',
+            opacity: 0.5,
+            showscale: false
+          },
+          hoverinfo: 'text'
+        });
+
+        // Trace 2: Top 25 Master Catalog Candidates
+        traces.push({
+          x: top25.map(p => p.rho),
+          y: top25.map(p => p.EoD),
+          text: top25.map(p => `<b>${p.id}</b> (${p.track})<br>${p.formula}<br>ρ: ${p.rho} g/cm³<br>E/ρ: ${p.EoD}<br>耐食: ${p.corr}<br>Pugh: ${p.B_G}<br>新規性: ${p.novelty_dist}%`),
+          mode: 'markers',
+          type: 'scatter',
+          name: '🏆 Top 25 ポートフォリオ',
+          marker: {
+            size: 11,
+            color: top25.map(p => p[colorMetric] || 50),
+            colorscale: 'Viridis',
+            showscale: true,
+            colorbar: { title: colorMetric, thickness: 12, len: 0.6 },
+            symbol: 'diamond',
+            line: { color: '#ffffff', width: 1.5 }
+          },
+          hoverinfo: 'text'
+        });
+
+        // Trace 3: Benchmark Alloys
+        if (showBench) {
+          traces.push({
+            x: benchmarks.map(b => b.rho),
+            y: benchmarks.map(b => b.EoD),
+            text: benchmarks.map(b => `<b>${b.name}</b><br>${b.formula}<br>ρ: ${b.rho} g/cm³<br>E/ρ: ${b.EoD}`),
+            mode: 'markers+text',
+            type: 'scatter',
+            name: '公知基準合金 (Benchmarks)',
+            textposition: 'top center',
+            marker: {
+              size: 12,
+              color: '#f43f5e',
+              symbol: 'cross',
+              line: { color: '#ffffff', width: 1.5 }
+            },
+            hoverinfo: 'text'
+          });
+        }
+
+        const layout = {
+          paper_bgcolor: '#131d32',
+          plot_bgcolor: '#0b1120',
+          font: { color: '#94a3b8', family: 'Inter' },
+          xaxis: {
+            title: '密度 ρ (g/cm³)',
+            gridcolor: '#1e293b',
+            zerolinecolor: '#334155',
+            range: [4.2, 5.2]
+          },
+          yaxis: {
+            title: '比弾性率 E/ρ (GPa·g⁻¹cm³)',
+            gridcolor: '#1e293b',
+            zerolinecolor: '#334155',
+            range: [24.0, 32.5]
+          },
+          margin: { l: 60, r: 40, t: 30, b: 60 },
+          legend: { orientation: 'h', y: 1.08, x: 0.05 },
+          shapes: [
+            // Density Boundary Line (ρ = 4.50)
+            {
+              type: 'line',
+              x0: 4.50, x1: 4.50, y0: 24, y1: 32.5,
+              line: { color: '#ef4444', width: 2, dash: 'dash' }
+            },
+            // Specific Modulus Boundary Line (E/ρ = 25.0)
+            {
+              type: 'line',
+              x0: 4.2, x1: 5.2, y0: 25.0, y1: 25.0,
+              line: { color: '#38bdf8', width: 1.5, dash: 'dash' }
+            }
+          ],
+          annotations: [
+            {
+              x: 4.49, y: 31.8, xref: 'x', yref: 'y',
+              text: 'Charter 上限 (ρ ≤ 4.50)', showarrow: false,
+              font: { color: '#ef4444', size: 10 }, xanchor: 'right'
+            },
+            {
+              x: 5.0, y: 25.2, xref: 'x', yref: 'y',
+              text: 'Charter 下限 (E/ρ &gt; 25.0)', showarrow: false,
+              font: { color: '#38bdf8', size: 10 }, yanchor: 'bottom'
+            }
+          ]
+        };
+
+        Plotly.newPlot('mainPlot', traces, layout, { responsive: true });
+
+      } else {
+        // 3D Scatter
+        traces.push({
+          x: top25.map(p => p.rho),
+          y: top25.map(p => p.EoD),
+          z: top25.map(p => p.corr),
+          text: top25.map(p => `<b>${p.id}</b><br>${p.formula}<br>ρ: ${p.rho}<br>E/ρ: ${p.EoD}<br>耐食: ${p.corr}`),
+          mode: 'markers',
+          type: 'scatter3d',
+          name: '🏆 Top 25 候補',
+          marker: {
+            size: 7,
+            color: top25.map(p => p[colorMetric] || 50),
+            colorscale: 'Viridis',
+            showscale: true,
+            colorbar: { title: colorMetric }
+          },
+          hoverinfo: 'text'
+        });
+
+        if (showBench) {
+          traces.push({
+            x: benchmarks.map(b => b.rho),
+            y: benchmarks.map(b => b.EoD),
+            z: benchmarks.map(b => b.corr),
+            text: benchmarks.map(b => `<b>${b.name}</b><br>${b.formula}`),
+            mode: 'markers+text',
+            type: 'scatter3d',
+            name: '公知基準合金',
+            marker: { size: 8, color: '#f43f5e', symbol: 'cross' },
+            hoverinfo: 'text'
+          });
+        }
+
+        const layout3d = {
+          paper_bgcolor: '#131d32',
+          font: { color: '#94a3b8', family: 'Inter' },
+          scene: {
+            xaxis: { title: '密度 ρ (g/cm³)', gridcolor: '#1e293b', backgroundcolor: '#0b1120' },
+            yaxis: { title: '比弾性率 E/ρ', gridcolor: '#1e293b', backgroundcolor: '#0b1120' },
+            zaxis: { title: '耐食スコア', gridcolor: '#1e293b', backgroundcolor: '#0b1120' }
+          },
+          margin: { l: 20, r: 20, t: 20, b: 20 },
+          legend: { orientation: 'h', y: 0.95 }
+        };
+
+        Plotly.newPlot('mainPlot', traces, layout3d, { responsive: true });
+      }
+
+      // Add Click Listener to Select Alloy from Plot
+      const plotEl = document.getElementById('mainPlot');
+      plotEl.removeAllListeners && plotEl.removeAllListeners('plotly_click');
+      plotEl.on('plotly_click', (data) => {
+        if (!data.points || data.points.length === 0) return;
+        const pt = data.points[0];
+        // If clicked on top 25 trace
+        if (pt.data.name.includes('Top 25')) {
+          const selected = top25[pt.pointNumber];
+          if (selected) {
+            selectAlloy(selected);
+            switchTab('catalog');
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

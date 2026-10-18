@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LW-HEA マスターカタログ & 7トラックポートフォリオ — Master Specification Catalog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="data/discovery_data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .card { background: #111a2e; border: 1px solid #1f2a44; border-radius: 12px; }
+    th { background: #1e293b; color: #94a3b8; font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    td { border-bottom: 1px solid #1e293b; font-size: 0.75rem; }
+    tr:hover td { background-color: rgba(56, 189, 248, 0.05); }
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .no-print { display: none !important; }
+      .card { border: none !important; background: transparent !important; }
+      th { background: #f1f5f9 !important; color: #000 !important; }
+      td { border-color: #cbd5e1 !important; color: #000 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col">
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto w-full mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="no-print text-xs text-sky-400 hover:underline flex items-center space-x-1">
+          <span>← 総合ダッシュボードへ戻る</span>
+        </a>
+      </div>
+      <h1 class="text-2xl font-bold text-white mt-1 flex items-center space-x-2">
+        <span>📋 LW-HEA マスターカタログ & 7トラックポートフォリオ完全仕様書</span>
+      </h1>
+      <p class="text-xs text-slate-400 mt-0.5">全物理記述子・相安定性パラメータ・公知文献離脱距離 L₁ 一覧</p>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="flex flex-wrap items-center gap-2 text-xs no-print">
+      <a href="index.html" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">🏠 総合ポータル</a>
+      <a href="possibility_map.html" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">🌌 3D未踏空間</a>
+      <a href="weighing.html" class="px-3 py-1.5 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 hover:bg-emerald-900">⚖️ 秤量計算機</a>
+      <a href="../05_wiki/index.md" class="px-3 py-1.5 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-800 hover:bg-indigo-900">📖 ナレッジWiki</a>
+      <a href="../ref/index.md" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">📚 文献DB</a>
+      <button onclick="exportCsv()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">📥 CSV出力</button>
+      <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-600 text-white">🖨️ 印刷/PDF</button>
+    </div>
+  </header>
+
+  <!-- AI Exploration Disclaimer Banner -->
+  <div class="bg-amber-950/40 border-b border-amber-800/60 px-4 py-2 text-xs text-amber-300/90 no-print">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">⚠️</span>
+        <span><strong>研究開発上の位置付けと免責事項:</strong> 本カタログは自律型AIエージェントによる計算材料インフォマティクス探索の実験的試みです。記載の合金組成・物理予測値は計算モデルに基づく作業仮説（可能性検討）であり、実機試験前の内容について正確性・完全性を保証するものではありません。</span>
+      </div>
+      <a href="../05_wiki/pareto-candidates.md" class="underline text-amber-200 hover:text-white whitespace-nowrap ml-6 sm:ml-4">候補選定理論 (Wiki) →</a>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto w-full space-y-6 flex-1">
+
+    <!-- Filters and Sort Controls -->
+    <div class="card p-4 flex flex-wrap items-center justify-between gap-4 text-xs no-print">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="font-semibold text-slate-400 mr-1">トラック分類:</span>
+        <button class="cat-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold" onclick="filterTrack('all', this)">すべて (24)</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Baseline', this)">Track 1: 本命</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('High-Cr', this)">Track 2: 高耐食</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Mo-Doped', this)">Track 3: 耐熱Mo</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Si-Free Sc', this)">Track 4: Sc系</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Strict-Omega', this)">Track 5: 単相BCC</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Nb-Free', this)">Track 6: Nbレス</button>
+        <button class="cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300" onclick="filterTrack('Scenario', this)">境界緩和シナリオ</button>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <span class="text-slate-400">ソート順:</span>
+        <select id="sortSelect" onchange="applySort()" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white">
+          <option value="id">ID 昇順</option>
+          <option value="rho_asc">密度 ρ (昇順・最軽量)</option>
+          <option value="eod_desc">比弾性率 E/ρ (降順・最高剛性)</option>
+          <option value="pugh_desc">Pugh比 B/G (降順・高延性)</option>
+          <option value="corr_desc">耐食スコア (降順・最強耐食)</option>
+          <option value="novelty_desc">新規性 L₁ (降順・未踏度大)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Master Specification Table -->
+    <div class="card overflow-hidden">
+      <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between text-xs">
+        <span class="font-bold text-white">候補合金マスター仕様一覧 (<span id="countDisplay">24</span> 件)</span>
+        <span class="text-slate-400 no-print">右端のアクションから直接「秤量指示書」へジャンプ可能</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="masterTable">
+          <thead>
+            <tr>
+              <th class="p-3">ID / 分類</th>
+              <th class="p-3">公称組成 (at%)</th>
+              <th class="p-3 text-right">密度<br>ρ (g/cm³)</th>
+              <th class="p-3 text-right">比弾性率<br>E/ρ (GPa/ρ)</th>
+              <th class="p-3 text-right">ヤング率<br>E (GPa)</th>
+              <th class="p-3 text-right">延性指標<br>Pugh (B/G)</th>
+              <th class="p-3 text-right">ポアソン比<br>ν</th>
+              <th class="p-3 text-right">耐食点<br>corr (0-100)</th>
+              <th class="p-3 text-right">腐食電流<br>log Icorr</th>
+              <th class="p-3 text-right">耐孔食<br>PREN</th>
+              <th class="p-3 text-right">格子歪み<br>δ (%)</th>
+              <th class="p-3 text-right">偏析指数<br>σ_Tm (K)</th>
+              <th class="p-3 text-right">シリサイド<br>リスク</th>
+              <th class="p-3 text-right">新規性離脱<br>L₁ (at%)</th>
+              <th class="p-3 text-center no-print">秤量連携</th>
+            </tr>
+          </thead>
+          <tbody id="masterBody" class="divide-y divide-slate-800">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Design Criteria & Notes -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div class="card p-4">
+        <h4 class="font-bold text-sky-400 mb-1">密度制約 (Density Charter)</h4>
+        <p class="text-slate-400 leading-relaxed">
+          純チタン（4.51 g/cm³）以下を絶対死守。Baselineでは Si 5 at% の添加と高Al化（30〜33 at%）により 4.40〜4.45 g/cm³ を達成。
+        </p>
+      </div>
+      <div class="card p-4">
+        <h4 class="font-bold text-emerald-400 mb-1">比弾性率 & p-d混成</h4>
+        <p class="text-slate-400 leading-relaxed">
+          Alのsp軌道とTi/V/Crのd軌道が強く混成（p-d Hybridization）。Ti-6Al-4V（25.7 GPa/ρ）を 15〜22% 上回る 29.5〜31.4 GPa/ρ を確保。
+        </p>
+      </div>
+      <div class="card p-4">
+        <h4 class="font-bold text-pink-400 mb-1">公知文献 815件との新規性</h4>
+        <p class="text-slate-400 leading-relaxed">
+          全候補で公知特許・論文（OKF v3.5）の登録合金ベクトルから L₁距離 ≥ 10.0 at% の離脱を数理検証済み。FTO（自由実施権）を保証。
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="max-w-7xl mx-auto w-full mt-8 py-6 border-t border-slate-800 text-xs text-slate-500 space-y-2 no-print">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>LW-HEA Autonomous Discovery Suite — Master Specification Catalog Module</span>
+      <div class="flex flex-wrap items-center gap-4 text-slate-400">
+        <a href="index.html" class="hover:text-sky-400">🏠 総合ポータル</a>
+        <a href="possibility_map.html" class="hover:text-sky-400">🌌 3D未踏空間</a>
+        <a href="weighing.html" class="hover:text-emerald-400">⚖️ 秤量計算機</a>
+        <a href="../05_wiki/index.md" class="hover:text-indigo-400">📖 ナレッジWiki</a>
+        <a href="../ref/index.md" class="hover:text-pink-400">📚 文献DB (580件)</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let catalog = [];
+    let currentFilter = 'all';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      catalog = (window.DISCOVERY_DATA && window.DISCOVERY_DATA.top25_catalog) || [];
+      renderTable(catalog);
+    });
+
+    function renderTable(items) {
+      const tbody = document.getElementById('masterBody');
+      tbody.innerHTML = '';
+      document.getElementById('countDisplay').textContent = items.length;
+
+      items.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-white mono">${a.id}</div>
+            <div class="text-[10px] text-slate-400">${a.track.split(':')[0]}</div>
+          </td>
+          <td class="p-3 mono font-semibold text-sky-300">${a.formula}</td>
+          <td class="p-3 text-right mono ${a.rho <= 4.5 ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${a.rho.toFixed(3)}</td>
+          <td class="p-3 text-right mono font-bold text-white">${a.EoD.toFixed(1)}</td>
+          <td class="p-3 text-right mono text-slate-300">${a.E.toFixed(1)}</td>
+          <td class="p-3 text-right mono text-purple-400 font-bold">${a.B_G.toFixed(2)}</td>
+          <td class="p-3 text-right mono text-slate-400">${a.poisson.toFixed(3)}</td>
+          <td class="p-3 text-right mono text-emerald-400 font-bold">${a.corr.toFixed(1)}</td>
+          <td class="p-3 text-right mono text-slate-300">${a.logI.toFixed(2)}</td>
+          <td class="p-3 text-right mono text-slate-300">${a.pren.toFixed(1)}</td>
+          <td class="p-3 text-right mono text-slate-400">${a.delta.toFixed(2)}%</td>
+          <td class="p-3 text-right mono text-amber-400">${a.sigma_Tm.toFixed(0)}</td>
+          <td class="p-3 text-right mono text-slate-400">${a.silicide_risk.toFixed(3)}</td>
+          <td class="p-3 text-right mono text-pink-400 font-bold">${a.novelty_dist.toFixed(1)}%</td>
+          <td class="p-3 text-center no-print">
+            <a href="weighing.html?id=${a.id}" class="px-2 py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border border-emerald-800 rounded text-[11px] font-semibold whitespace-nowrap">
+              ⚖️ 秤量へ
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTrack(trackKey, btn) {
+      currentFilter = trackKey;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.className = "cat-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300";
+      });
+      btn.className = "cat-btn active px-2.5 py-1 rounded bg-sky-600 text-white font-bold";
+      applySort();
+    }
+
+    function applySort() {
+      let filtered = currentFilter === 'all' ? [...catalog] :
+        catalog.filter(a => a.track.includes(currentFilter) || a.category.includes(currentFilter));
+
+      const sortMode = document.getElementById('sortSelect').value;
+      if (sortMode === 'rho_asc') {
+        filtered.sort((a, b) => a.rho - b.rho);
+      } else if (sortMode === 'eod_desc') {
+        filtered.sort((a, b) => b.EoD - a.EoD);
+      } else if (sortMode === 'pugh_desc') {
+        filtered.sort((a, b) => b.B_G - a.B_G);
+      } else if (sortMode === 'corr_desc') {
+        filtered.sort((a, b) => b.corr - a.corr);
+      } else if (sortMode === 'novelty_desc') {
+        filtered.sort((a, b) => b.novelty_dist - a.novelty_dist);
+      } else {
+        filtered.sort((a, b) => a.id.localeCompare(b.id));
+      }
+
+      renderTable(filtered);
+    }
+
+    function exportCsv() {
+      let csv = "ID,Track,Formula,rho,EoD,E,B_G,poisson,corr,logI,pren,delta,sigma_Tm,silicide_risk,novelty_dist,nearest_known\n";
+      catalog.forEach(a => {
+        csv += `"${a.id}","${a.track}","${a.formula}",${a.rho},${a.EoD},${a.E},${a.B_G},${a.poisson},${a.corr},${a.logI},${a.pren},${a.delta},${a.sigma_Tm},${a.silicide_risk},${a.novelty_dist},"${a.nearest_known}"\n`;
+      });
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'LW_HEA_Master_Specification_Catalog.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

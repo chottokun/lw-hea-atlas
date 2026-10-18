@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LW-HEA 精密インゴット秤量システム — Laboratory Batch Weighing Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="data/discovery_data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #090e17; color: #e2e8f0; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .card { background: #111927; border: 1px solid #1e293b; border-radius: 12px; }
+    .done-row { background-color: rgba(16, 185, 129, 0.15) !important; border-left: 4px solid #10b981; }
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .card { border: 1px solid #ccc !important; background: #fff !important; }
+      .no-print { display: none !important; }
+      table { width: 100% !important; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd !important; color: #000 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col">
+
+  <!-- Header -->
+  <header class="max-w-5xl mx-auto w-full mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="no-print text-xs text-sky-400 hover:underline flex items-center space-x-1">
+          <span>← 総合ダッシュボードへ戻る</span>
+        </a>
+      </div>
+      <h1 class="text-2xl font-bold text-white mt-1 flex items-center space-x-2">
+        <span>⚖️ LW-HEA 精密インゴット秤量指示・記録システム</span>
+      </h1>
+      <p class="text-xs text-slate-400 mt-0.5">真空アーク溶解 (VAR) / プラズマスカル溶解 現場専用バッチ秤量ツール</p>
+    </div>
+
+    <!-- Batch Mass & Process Selection -->
+    <div class="flex flex-wrap items-center gap-2 no-print">
+      <a href="index.html" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700">🏠 総合ポータル</a>
+      <a href="catalog.html" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700">📋 カタログ</a>
+      <a href="../05_wiki/experimental-protocol.md" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 text-xs">📖 実験SOP</a>
+      <a href="../ref/index.md" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs">📚 文献DB</a>
+      <div class="h-4 w-px bg-slate-700 mx-1"></div>
+      <button onclick="setWeight(50)" class="w-btn px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">50g</button>
+      <button onclick="setWeight(100)" class="w-btn active px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-lg shadow-emerald-900/40">100g</button>
+      <button onclick="setWeight(200)" class="w-btn px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">200g</button>
+      <button onclick="exportCsv()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 flex items-center space-x-1">
+        <span>📥 CSV</span>
+      </button>
+      <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-600 text-xs text-white flex items-center space-x-1">
+        <span>🖨️ 印刷</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- AI Exploration Disclaimer Banner -->
+  <div class="bg-amber-950/40 border-b border-amber-800/60 px-4 py-2 text-xs text-amber-300/90 no-print">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">⚠️</span>
+        <span><strong>実験室向け注意・免責事項:</strong> 本秤量指示値は計算モデルに基づく実験検証用の参考レシピ（可能性検討）です。各元素の揮散補正係数は一般的なVAR炉の推定値であり、実際の溶解時は設備の排気・出力特性に応じた調整を行ってください。記載事項の正確性を保証するものではありません。</span>
+      </div>
+      <a href="../05_wiki/experimental-protocol.md" class="underline text-amber-200 hover:text-white whitespace-nowrap ml-6 sm:ml-4">実験SOP詳細 (Wiki) →</a>
+    </div>
+  </div>
+
+  <main class="max-w-5xl mx-auto w-full space-y-6 flex-1">
+    
+    <!-- Controls & Recipe Overview Card -->
+    <div class="card p-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Target Alloy Selector -->
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-1">調製対象合金の選択:</label>
+          <select id="alloySelect" onchange="onAlloyChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white mono font-bold">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <!-- Custom Target Mass Input -->
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-1">目標インゴット重量 (g):</label>
+          <div class="flex items-center space-x-2">
+            <input type="number" id="targetMassInput" value="100.0" step="0.5" min="5" max="5000" onchange="onMassChange()"
+                   class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-white mono font-bold w-32">
+            <span class="text-xs text-slate-400">g (許容公差 ±0.02g)</span>
+          </div>
+        </div>
+
+        <!-- Process & Evaporation Options -->
+        <div>
+          <label class="block text-xs text-slate-400 font-semibold mb-1">溶解プロセス補正:</label>
+          <div class="space-y-1">
+            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="varEvapChk" checked onchange="calculateWeighing()" class="rounded text-emerald-500">
+              <span class="font-medium">VAR揮発補正 (Al +1.0%, Cr +0.5%)</span>
+            </label>
+            <p class="text-[10px] text-slate-500">真空度 10⁻³ Pa 下の溶湯蒸気圧差による元素損失を事前相殺。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Current Recipe Summary Ribbon -->
+      <div class="mt-4 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center space-x-3">
+          <span class="badge bg-sky-950 text-sky-400 border border-sky-800" id="alloyBadge">Track 1: Baseline</span>
+          <span class="text-white font-bold mono text-sm" id="alloyFormula">Al30 Ti35 V15 Cr10 Nb5 Si5</span>
+        </div>
+        <div class="flex items-center space-x-4 mono">
+          <span class="text-slate-400">計算密度: <strong class="text-white" id="alloyRho">4.447</strong> g/cm³</span>
+          <span class="text-slate-400">比弾性率: <strong class="text-sky-400" id="alloyEoD">29.7</strong> GPa/ρ</span>
+          <span class="text-slate-400">Pugh比: <strong class="text-purple-400" id="alloyPugh">2.237</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Indicator Bar -->
+    <div class="card p-3 no-print">
+      <div class="flex items-center justify-between text-xs mb-1">
+        <span class="text-slate-400">秤量作業進捗 (Weighing Progress):</span>
+        <span class="font-bold text-emerald-400 mono" id="progressText">0 / 6 元素完了 (0%)</span>
+      </div>
+      <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+        <div id="progressBar" class="bg-emerald-500 h-2.5 transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Interactive Weighing Table -->
+    <div class="card overflow-hidden">
+      <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between text-xs">
+        <span class="font-bold text-white">元素別秤量指示・チェックシート</span>
+        <span class="text-slate-400">計量完了ごとに [確認] ボタンを押してください</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-900 text-slate-400">
+              <th class="p-3 w-16 text-center">ステータス</th>
+              <th class="p-3">元素</th>
+              <th class="p-3">推奨原料・純度</th>
+              <th class="p-3 text-right">原子量</th>
+              <th class="p-3 text-right">原子比 (at%)</th>
+              <th class="p-3 text-right">理論比 (wt%)</th>
+              <th class="p-3 text-right">仕込み比 (wt%)</th>
+              <th class="p-3 text-right text-emerald-400 font-bold text-sm">指示秤量値 (g)</th>
+              <th class="p-3 w-40">実測秤量値 (g)</th>
+              <th class="p-3 text-center no-print">アクション</th>
+            </tr>
+          </thead>
+          <tbody id="recipeBody" class="divide-y divide-slate-800">
+            <!-- Populated via JS -->
+          </tbody>
+          <tfoot class="bg-slate-900/90 font-bold border-t border-slate-700 text-xs">
+            <tr>
+              <td class="p-3 text-center text-emerald-400 mono" id="footDone">0/6</td>
+              <td class="p-3 text-white" colspan="3">合計 (Total Ingot)</td>
+              <td class="p-3 text-right mono text-sky-400" id="footAt">100.00 %</td>
+              <td class="p-3 text-right mono text-slate-400" id="footThWt">100.00 %</td>
+              <td class="p-3 text-right mono text-white" id="footFinWt">100.00 %</td>
+              <td class="p-3 text-right mono text-emerald-400 text-base" id="footTotalG">100.000 g</td>
+              <td class="p-3 mono text-slate-300 text-[11px]" id="footActualSum">実測合計: 0.000 g</td>
+              <td class="p-3 text-center no-print">
+                <button onclick="resetChecks()" class="text-[10px] text-slate-400 hover:text-rose-400">リセット</button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Vacuum Melting Loading Sequence Recommendation -->
+    <div class="card p-5 text-xs space-y-3">
+      <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+        <span>炉内るつぼ装入順序 (Crucible Stacking Sequence Guideline)</span>
+      </h3>
+      <p class="text-slate-400 leading-relaxed">
+        真空アーク放電時のアーク力（プラズマジェット）による低融点・軽元素の吹き飛びおよび蒸気圧差を考慮した推奨積層順序：
+      </p>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center pt-1">
+        <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
+          <div class="text-[10px] text-emerald-400 font-bold">層 1 (最下層 / 底面)</div>
+          <div class="text-sm font-bold text-white mt-1 mono">Al, Si</div>
+          <p class="text-[10px] text-slate-400 mt-1">銅ハース底面に密着させ、初期溶解で上層を濡らす。</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
+          <div class="text-[10px] text-sky-400 font-bold">層 2 (中間層)</div>
+          <div class="text-sm font-bold text-white mt-1 mono">Ti, Cr</div>
+          <p class="text-[10px] text-slate-400 mt-1">主要溶媒となり共晶融液を形成し高融点金属を溶解促進。</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
+          <div class="text-[10px] text-amber-400 font-bold">層 3 (上層)</div>
+          <div class="text-sm font-bold text-white mt-1 mono">V, Nb, Mo</div>
+          <p class="text-[10px] text-slate-400 mt-1">アーク熱を高融点金属に直受させつつ、下の溶湯プールに落とし込む。</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
+          <div class="text-[10px] text-purple-400 font-bold">先溶ゲッター</div>
+          <div class="text-sm font-bold text-white mt-1 mono">純チタン (Ti)</div>
+          <p class="text-[10px] text-slate-400 mt-1">本材溶解前に別ポケットのTiを溶解し、残留ガスを完全吸収。</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="max-w-5xl mx-auto w-full mt-8 py-6 border-t border-slate-800 text-xs text-slate-500 space-y-2 no-print">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>LW-HEA Autonomous Discovery Suite — Laboratory Precision Weighing Module</span>
+      <div class="flex flex-wrap items-center gap-4 text-slate-400">
+        <a href="index.html" class="hover:text-sky-400">🏠 総合ポータル</a>
+        <a href="catalog.html" class="hover:text-sky-400">📋 カタログ一覧</a>
+        <a href="possibility_map.html" class="hover:text-sky-400">🌌 3D未踏空間</a>
+        <a href="../05_wiki/experimental-protocol.md" class="hover:text-indigo-400">📖 実験SOP (Wiki)</a>
+        <a href="../ref/index.md" class="hover:text-pink-400">📚 文献DB (580件)</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    let currentAlloy = null;
+    let targetMass = 100.0;
+    const checkedRows = new Set();
+    const actualWeights = {};
+
+    const ATOMIC_MASSES = {
+      "Al": 26.982, "Ti": 47.867, "V": 50.942, "Cr": 51.996,
+      "Nb": 92.906, "Si": 28.085, "Mo": 95.95,  "Sc": 44.956,
+      "Zr": 91.224, "Mg": 24.305, "Mn": 54.938
+    };
+
+    const RAW_FORMS = {
+      "Al": "高純度ペレット (4N / 99.99%)",
+      "Ti": "スポンジチタン/削片 (4N / 99.99%)",
+      "V":  "高純度バナジウム粒 (3N5 / 99.95%)",
+      "Cr": "電解クロムフレーク (4N / 99.99%)",
+      "Nb": "高純度ニオブチップ (3N5 / 99.95%)",
+      "Si": "半導体グレード単結晶片 (5N / 99.999%)",
+      "Mo": "高純度モリブデンペレット (3N8 / 99.98%)",
+      "Sc": "高純度スカンジウム蒸留ピース (3N / 99.9%)"
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const top25 = (window.DISCOVERY_DATA && window.DISCOVERY_DATA.top25_catalog) || [];
+      const sel = document.getElementById('alloySelect');
+      sel.innerHTML = '';
+      top25.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = `${a.id} — ${a.formula} (${a.track.split(':')[0]})`;
+        sel.appendChild(opt);
+      });
+
+      // Check URL search param for pre-selection
+      const urlParams = new URLSearchParams(window.location.search);
+      const preId = urlParams.get('id');
+      if (preId && top25.some(a => a.id === preId)) {
+        sel.value = preId;
+      }
+
+      onAlloyChange();
+    });
+
+    function setWeight(m) {
+      targetMass = parseFloat(m);
+      document.getElementById('targetMassInput').value = targetMass.toFixed(1);
+      document.querySelectorAll('.w-btn').forEach(b => {
+        b.className = "w-btn px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300";
+      });
+      if (m === 50) document.querySelectorAll('.w-btn')[0].className = "w-btn active px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-lg shadow-emerald-900/40";
+      if (m === 100) document.querySelectorAll('.w-btn')[1].className = "w-btn active px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-lg shadow-emerald-900/40";
+      if (m === 200) document.querySelectorAll('.w-btn')[2].className = "w-btn active px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-lg shadow-emerald-900/40";
+      calculateWeighing();
+    }
+
+    function onMassChange() {
+      const v = parseFloat(document.getElementById('targetMassInput').value);
+      if (!isNaN(v) && v > 0) {
+        targetMass = v;
+        document.querySelectorAll('.w-btn').forEach(b => {
+          b.className = "w-btn px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300";
+        });
+        calculateWeighing();
+      }
+    }
+
+    function onAlloyChange() {
+      const top25 = (window.DISCOVERY_DATA && window.DISCOVERY_DATA.top25_catalog) || [];
+      const selId = document.getElementById('alloySelect').value;
+      currentAlloy = top25.find(a => a.id === selId) || top25[0];
+
+      if (currentAlloy) {
+        document.getElementById('alloyBadge').textContent = currentAlloy.track;
+        document.getElementById('alloyFormula').textContent = currentAlloy.formula;
+        document.getElementById('alloyRho').textContent = currentAlloy.rho.toFixed(3);
+        document.getElementById('alloyEoD').textContent = currentAlloy.EoD.toFixed(1);
+        document.getElementById('alloyPugh').textContent = currentAlloy.B_G.toFixed(3);
+        resetChecks();
+        calculateWeighing();
+      }
+    }
+
+    function calculateWeighing() {
+      if (!currentAlloy) return;
+      const comp = currentAlloy.comp;
+      const applyEvap = document.getElementById('varEvapChk').checked;
+
+      let totalMolar = 0;
+      const rows = [];
+      for (const el in comp) {
+        const at = comp[el];
+        const m = ATOMIC_MASSES[el] || 50.0;
+        const part = at * m;
+        totalMolar += part;
+        rows.push({
+          el: el,
+          at: at,
+          atomicMass: m,
+          raw: RAW_FORMS[el] || "高純度原料",
+          mPart: part
+        });
+      }
+
+      rows.forEach(r => {
+        r.theoryWt = (r.mPart / totalMolar) * 100.0;
+        r.adjWt = r.theoryWt;
+        if (applyEvap) {
+          if (r.el === 'Al') r.adjWt += 1.0;
+          if (r.el === 'Cr') r.adjWt += 0.5;
+        }
+      });
+
+      const adjSum = rows.reduce((acc, r) => acc + r.adjWt, 0);
+      rows.forEach(r => {
+        r.finalWt = (r.adjWt / adjSum) * 100.0;
+        r.weighG = (r.finalWt / 100.0) * targetMass;
+      });
+
+      renderRecipe(rows);
+    }
+
+    function renderRecipe(rows) {
+      const tbody = document.getElementById('recipeBody');
+      tbody.innerHTML = '';
+      let sumG = 0;
+
+      rows.forEach(r => {
+        sumG += r.weighG;
+        const isDone = checkedRows.has(r.el);
+        const tr = document.createElement('tr');
+        tr.id = `row_${r.el}`;
+        tr.className = isDone ? "done-row transition" : "hover:bg-slate-800/40 transition";
+
+        tr.innerHTML = `
+          <td class="p-3 text-center">
+            ${isDone ? '<span class="text-emerald-400 font-bold">✓ 完了</span>' : '<span class="text-slate-500">未</span>'}
+          </td>
+          <td class="p-3 font-bold text-white mono text-sm">${r.el}</td>
+          <td class="p-3 text-slate-400 text-[11px]">${r.raw}</td>
+          <td class="p-3 text-right mono text-slate-400">${r.atomicMass.toFixed(3)}</td>
+          <td class="p-3 text-right mono text-sky-400 font-semibold">${r.at.toFixed(1)} %</td>
+          <td class="p-3 text-right mono text-slate-300">${r.theoryWt.toFixed(2)} %</td>
+          <td class="p-3 text-right mono font-semibold ${r.el==='Al'||r.el==='Cr' ? 'text-amber-400' : 'text-slate-300'}">${r.finalWt.toFixed(2)} %</td>
+          <td class="p-3 text-right mono font-bold text-emerald-400 text-sm bg-emerald-950/20">${r.weighG.toFixed(3)} g</td>
+          <td class="p-3">
+            <input type="number" step="0.001" placeholder="実測値" value="${actualWeights[r.el] || ''}" onchange="updateActualWeight('${r.el}', this.value)"
+                   class="bg-slate-900 border border-slate-700 rounded p-1 text-xs text-white w-28 mono font-bold text-right">
+          </td>
+          <td class="p-3 text-center no-print">
+            <button onclick="toggleDone('${r.el}')" class="px-2.5 py-1 text-[11px] rounded font-semibold transition ${isDone ? 'bg-slate-700 text-slate-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow'}">
+              ${isDone ? '取消' : '秤量完了'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('footTotalG').textContent = sumG.toFixed(3) + ' g';
+      updateProgress(rows.length);
+      updateActualSum();
+    }
+
+    function toggleDone(el) {
+      if (checkedRows.has(el)) {
+        checkedRows.delete(el);
+      } else {
+        checkedRows.add(el);
+      }
+      calculateWeighing();
+    }
+
+    function resetChecks() {
+      checkedRows.clear();
+      for (const k in actualWeights) delete actualWeights[k];
+      calculateWeighing();
+    }
+
+    function updateActualWeight(el, val) {
+      actualWeights[el] = parseFloat(val) || 0;
+      updateActualSum();
+    }
+
+    function updateActualSum() {
+      let sum = 0;
+      for (const k in actualWeights) {
+        sum += actualWeights[k];
+      }
+      document.getElementById('footActualSum').textContent = `実測合計: ${sum.toFixed(3)} g`;
+    }
+
+    function updateProgress(totalCount) {
+      const doneCount = checkedRows.size;
+      const pct = Math.round((doneCount / totalCount) * 100);
+      document.getElementById('progressBar').style.width = `${pct}%`;
+      document.getElementById('progressText').textContent = `${doneCount} / ${totalCount} 元素完了 (${pct}%)`;
+      document.getElementById('footDone').textContent = `${doneCount}/${totalCount}`;
+    }
+
+    function exportCsv() {
+      if (!currentAlloy) return;
+      let csv = `LW-HEA 精密インゴット秤量指示・実績書\n`;
+      csv += `合金ID,${currentAlloy.id}\n公称組成,${currentAlloy.formula}\n目標インゴット重量,${targetMass.toFixed(2)} g\n日付,${new Date().toLocaleDateString('ja-JP')}\n\n`;
+      csv += `元素,推奨原料,原子量,原子比(at%),理論比(wt%),仕込み比(wt%),指示秤量値(g),実測記録(g),判定\n`;
+
+      const rows = document.querySelectorAll('#recipeBody tr');
+      rows.forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        const st = tds[0].textContent.trim();
+        const el = tds[1].textContent.trim();
+        const raw = tds[2].textContent.trim();
+        const mass = tds[3].textContent.trim();
+        const at = tds[4].textContent.trim();
+        const thWt = tds[5].textContent.trim();
+        const finWt = tds[6].textContent.trim();
+        const weighG = tds[7].textContent.trim();
+        const actG = actualWeights[el] ? actualWeights[el].toFixed(3) : "";
+        csv += `"${el}","${raw}",${mass},${at},${thWt},${finWt},${weighG},${actG},"${st}"\n`;
+      });
+
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weighing_${currentAlloy.id}_${targetMass}g.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

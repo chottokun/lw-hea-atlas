@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LW-HEA 未踏空間 & 可能性ランドスケープ — 3D Possibility Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <script src="data/discovery_data.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #080d1a; color: #e2e8f0; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-6">
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto w-full mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="text-xs text-sky-400 hover:underline flex items-center space-x-1">
+          <span>← 総合ダッシュボードへ戻る</span>
+        </a>
+      </div>
+      <h1 class="text-2xl font-bold text-white mt-1 flex items-center space-x-2">
+        <span>🌌 LW-HEA 未踏組成空間 3D パレートランドスケープ</span>
+      </h1>
+      <p class="text-xs text-slate-400 mt-0.5">公知文献・特許815件の境界外側に広がる4大ホワイトスペースアイランドの全貌</p>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <a href="index.html" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">🏠 総合ポータル</a>
+      <a href="catalog.html" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">📋 カタログ一覧</a>
+      <a href="weighing.html" class="px-3 py-1.5 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 hover:bg-emerald-900">⚖️ 秤量計算機</a>
+      <a href="../05_wiki/index.md" class="px-3 py-1.5 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-800 hover:bg-indigo-900">📖 ナレッジWiki</a>
+      <a href="../ref/index.md" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">📚 文献DB</a>
+    </div>
+  </header>
+
+  <!-- AI Exploration Disclaimer Banner -->
+  <div class="bg-amber-950/40 border-b border-amber-800/60 px-4 py-2 text-xs text-amber-300/90">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <div class="flex items-center space-x-2">
+        <span class="text-base">⚠️</span>
+        <span><strong>研究開発上の位置付けと免責事項:</strong> 本3Dマップは自律型AIエージェントによる計算材料インフォマティクス探索の実験的試みです。可視化された未踏アイランドおよび物理予測値は計算モデルに基づく作業仮説（可能性検討）であり、実機試験前の内容について正確性・完全性を保証するものではありません。</span>
+      </div>
+      <a href="../05_wiki/possibility-landscape-and-scenarios.md" class="underline text-amber-200 hover:text-white whitespace-nowrap ml-6 sm:ml-4">未踏空間理論 (Wiki) →</a>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto w-full space-y-6 flex-1">
+
+    <!-- 3D Plot Controls -->
+    <div class="card p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div class="flex items-center space-x-4">
+        <span class="font-bold text-slate-300">Z軸 (垂直軸):</span>
+        <select id="zAxisSelect" onchange="render3D()" class="bg-slate-900 border border-slate-700 text-white rounded px-2.5 py-1">
+          <option value="corr">耐食性スコア (0-100)</option>
+          <option value="B_G">Pugh比 B/G (延性指標)</option>
+          <option value="pren">耐孔食指数 PREN</option>
+          <option value="sigma_Tm">融点偏析指数 σ_Tm (K)</option>
+          <option value="novelty_dist">公知新規性距離 L₁ (at%)</option>
+        </select>
+
+        <span class="font-bold text-slate-300 ml-2">カラーマップ:</span>
+        <select id="colorScaleSelect" onchange="render3D()" class="bg-slate-900 border border-slate-700 text-white rounded px-2.5 py-1">
+          <option value="Viridis">Viridis (標準高コントラスト)</option>
+          <option value="Plasma">Plasma (耐熱・高エネルギー)</option>
+          <option value="Turbo">Turbo (フルスペクトラム)</option>
+          <option value="Cividis">Cividis (色覚ユニバーサル)</option>
+        </select>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center space-x-1.5 cursor-pointer">
+          <input type="checkbox" id="showCloudChk" checked onchange="render3D()" class="rounded text-sky-500">
+          <span class="text-slate-300">実行可能クラウド (Feasible Cloud)</span>
+        </label>
+        <label class="flex items-center space-x-1.5 cursor-pointer">
+          <input type="checkbox" id="showBenchChk" checked onchange="render3D()" class="rounded text-rose-500">
+          <span class="text-slate-300">公知基準合金 (Benchmarks)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 3D Plot Canvas -->
+    <div class="card p-4">
+      <div id="landscape3d" style="width: 100%; height: 680px;"></div>
+    </div>
+
+    <!-- 4 White Space Islands Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+      
+      <div class="card p-4 border-t-4 border-t-sky-500">
+        <span class="badge bg-sky-950 text-sky-400 mb-2">Island 1</span>
+        <h3 class="font-bold text-white text-sm">超軽量・高Alフロンティア</h3>
+        <p class="text-slate-400 mt-1 leading-relaxed">
+          <strong>ρ: 4.29〜4.38 g/cm³</strong><br>
+          Al 33〜35 at% 骨格。密度で純チタンを 5% 下回る未踏領域。B2ナノ相の整合析出により E/ρ &gt; 29 を死守。
+        </p>
+      </div>
+
+      <div class="card p-4 border-t-4 border-t-emerald-500">
+        <span class="badge bg-emerald-950 text-emerald-400 mb-2">Island 2</span>
+        <h3 class="font-bold text-white text-sm">極限不動態・マルチオキサイド</h3>
+        <p class="text-slate-400 mt-1 leading-relaxed">
+          <strong>log Icorr ≤ -8.0, PREN &gt; 40</strong><br>
+          Cr 12〜15 at% + Nb 5 at% + Si 5 at%。表面に TiO₂-Cr₂O₃-Al₂O₃-SiO₂ の4重バリアを形成しチタン以上の耐食性を達成。
+        </p>
+      </div>
+
+      <div class="card p-4 border-t-4 border-t-purple-500">
+        <span class="badge bg-purple-950 text-purple-400 mb-2">Island 3</span>
+        <h3 class="font-bold text-white text-sm">完全金属・高靱性 (Siフリー)</h3>
+        <p class="text-slate-400 mt-1 leading-relaxed">
+          <strong>Pugh比 B/G &gt; 2.4, σ_Tm &lt; 500K</strong><br>
+          Sc 5〜10 at% 添加または境界緩和バルブ金属5元系。シリサイド脆化リスク皆無で、過酷衝撃環境に対応。
+        </p>
+      </div>
+
+      <div class="card p-4 border-t-4 border-t-amber-500">
+        <span class="badge bg-amber-950 text-amber-400 mb-2">Island 4</span>
+        <h3 class="font-bold text-white text-sm">耐熱クリープ・Mo微量ドープ</h3>
+        <p class="text-slate-400 mt-1 leading-relaxed">
+          <strong>E &gt; 135 GPa, Tm &gt; 1850℃</strong><br>
+          Mo 2〜5 at% の精密添加。耐孔食指数 PREN &gt; 45 を誇り、高温航空宇宙・次世代エネルギー構造材に最適。
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="max-w-7xl mx-auto w-full mt-8 py-6 border-t border-slate-800 text-xs text-slate-500 space-y-2">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>LW-HEA Autonomous Discovery Suite — 3D Landscape Module</span>
+      <div class="flex flex-wrap items-center gap-4 text-slate-400">
+        <a href="index.html" class="hover:text-sky-400">🏠 総合ポータル</a>
+        <a href="catalog.html" class="hover:text-sky-400">📋 カタログ一覧</a>
+        <a href="weighing.html" class="hover:text-emerald-400">⚖️ 秤量計算機</a>
+        <a href="../05_wiki/index.md" class="hover:text-indigo-400">📖 ナレッジWiki</a>
+        <a href="../ref/index.md" class="hover:text-pink-400">📚 文献DB (580件)</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      render3D();
+    });
+
+    function render3D() {
+      if (!window.DISCOVERY_DATA) return;
+      const top25 = window.DISCOVERY_DATA.top25_catalog || [];
+      const feasibles = window.DISCOVERY_DATA.feasible_points || [];
+      const benchmarks = window.DISCOVERY_DATA.benchmarks || [];
+      const zKey = document.getElementById('zAxisSelect').value;
+      const colorScale = document.getElementById('colorScaleSelect').value;
+      const showCloud = document.getElementById('showCloudChk').checked;
+      const showBench = document.getElementById('showBenchChk').checked;
+
+      const zTitles = {
+        "corr": "耐食性スコア (0-100)",
+        "B_G": "Pugh比 B/G (延性)",
+        "pren": "耐孔食指数 PREN",
+        "sigma_Tm": "偏析指数 σ_Tm (K)",
+        "novelty_dist": "公知新規性距離 L₁ (%)"
+      };
+
+      const traces = [];
+
+      // Feasible cloud
+      if (showCloud) {
+        traces.push({
+          x: feasibles.map(p => p.rho),
+          y: feasibles.map(p => p.EoD),
+          z: feasibles.map(p => p[zKey] !== undefined ? p[zKey] : 50),
+          text: feasibles.map(p => `${p.formula}<br>ρ: ${p.rho}<br>E/ρ: ${p.EoD}<br>${zTitles[zKey]}: ${p[zKey]}`),
+          mode: 'markers',
+          type: 'scatter3d',
+          name: '実行可能解群 (Feasible)',
+          marker: {
+            size: 3,
+            color: '#334155',
+            opacity: 0.3
+          },
+          hoverinfo: 'text'
+        });
+      }
+
+      // Top 25
+      traces.push({
+        x: top25.map(p => p.rho),
+        y: top25.map(p => p.EoD),
+        z: top25.map(p => p[zKey] !== undefined ? p[zKey] : 50),
+        text: top25.map(p => `<b>${p.id}</b> (${p.track})<br>${p.formula}<br>ρ: ${p.rho} g/cm³<br>E/ρ: ${p.EoD} GPa/ρ<br>${zTitles[zKey]}: ${p[zKey]}<br>L₁: ${p.novelty_dist}%`),
+        mode: 'markers',
+        type: 'scatter3d',
+        name: '🏆 Top 25 候補',
+        marker: {
+          size: 7,
+          color: top25.map(p => p[zKey] !== undefined ? p[zKey] : 50),
+          colorscale: colorScale,
+          showscale: true,
+          colorbar: { title: zTitles[zKey], len: 0.6 }
+        },
+        hoverinfo: 'text'
+      });
+
+      // Benchmarks
+      if (showBench) {
+        traces.push({
+          x: benchmarks.map(b => b.rho),
+          y: benchmarks.map(b => b.EoD),
+          z: benchmarks.map(b => b[zKey] !== undefined ? b[zKey] : (zKey === 'corr' ? b.corr : 50)),
+          text: benchmarks.map(b => `<b>${b.name}</b><br>${b.formula}<br>ρ: ${b.rho} g/cm³<br>E/ρ: ${b.EoD}`),
+          mode: 'markers+text',
+          type: 'scatter3d',
+          name: '公知基準合金',
+          textposition: 'top center',
+          marker: { size: 9, color: '#f43f5e', symbol: 'cross' },
+          hoverinfo: 'text'
+        });
+      }
+
+      const layout = {
+        paper_bgcolor: '#0f172a',
+        font: { color: '#94a3b8', family: 'Inter' },
+        scene: {
+          xaxis: { title: '密度 ρ (g/cm³)', gridcolor: '#1e293b', backgroundcolor: '#080d1a' },
+          yaxis: { title: '比弾性率 E/ρ (GPa·g⁻¹cm³)', gridcolor: '#1e293b', backgroundcolor: '#080d1a' },
+          zaxis: { title: zTitles[zKey], gridcolor: '#1e293b', backgroundcolor: '#080d1a' }
+        },
+        margin: { l: 0, r: 0, t: 20, b: 0 },
+        legend: { orientation: 'h', y: 0.98, x: 0.05 }
+      };
+
+      Plotly.newPlot('landscape3d', traces, layout, { responsive: true });
+    }
+  </script>
+</body>
+</html>
