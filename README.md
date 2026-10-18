@@ -28,6 +28,8 @@
 >    提示されている合金組成、物理モデル（点欠陥モデル、耐食性予測式、Pugh比、HPBI、RKI等）、および熱力学スクリーニング結果は、文献データと物理化学法則に基づく**「可能性検討のための計算スクリーニングおよび作業仮説（Working Hypotheses）」**であり、記載事項の正確性、完全性、および特定の工学的用途への適合性を保証するものではありません。
 > 2. **実験的実証の必要性**:
 >    これらは実際のインゴット溶解、組織解析（XRD/TEM/SEM）、および湿式電気化学腐食試験による検証前の段階にあります。本成果は、材料科学者による実験的検証や共同研究の足がかり、あるいは新たな材料空間開拓の「可能性のひとつの道筋」として提示しています。
+> 3. **知的財産・特許クリアランス（FTO）に関する免責**:
+>    リポジトリ内やWikiで言及されている特許クレーム対比やクリアランス検討（FTO分析）は、**AIエージェントによる自動情報抽出・机上比較に基づく「簡易的な探索サンプル・試行評価」**に過ぎません。特定の特許文献サンプルとの形式的な組成差異を例示したものであり、法的な特許非侵害性や自由実施性（Freedom-to-Operate）を**一切保証・担保するものではありません**。実際の研究開発、試作、製造、販売、出願等にあたっては、必ず知的財産の専門家（弁理士・知的財産専門弁護士等）による正式な調査および侵害鑑定を受けてください。
 
 ---
 
@@ -102,7 +104,7 @@
 | [`05_wiki/possibility-landscape-and-scenarios.md`](./05_wiki/possibility-landscape-and-scenarios.md) | 机上検討による未踏組成空間マップ・4大アイランド・If-Thenシナリオ・Top 25カタログ |
 | [`05_wiki/ablation-and-family-study.md`](./05_wiki/ablation-and-family-study.md) | 元素アブレーション・全ファミリー網羅解析・第2不可能性定理 |
 | [`05_wiki/lw-hea-design.md`](./05_wiki/lw-hea-design.md) | LW-HEA 設計指針 (密度・剛性・耐食の物理メカニズム・PDM理論) |
-| [`05_wiki/fto-analysis.md`](./05_wiki/fto-analysis.md) | 特許クリアランス (CN116497257B 等の claim-by-claim design-around) |
+| [`05_wiki/fto-analysis.md`](./05_wiki/fto-analysis.md) | 特許クレーム対比と探索的クリアランス検討（AIによる簡易サンプル評価・非保証） |
 | [`05_wiki/pareto-candidates.md`](./05_wiki/pareto-candidates.md) | パレート最適候補 Top 5 & 7トラックポートフォリオ |
 | [`05_wiki/experimental-protocol.md`](./05_wiki/experimental-protocol.md) | 7トラック別 SOP（サンドイッチ溶製法・均質化・水冷急冷・ASTM G5 評価） |
 | `Closed-Loop MI Core` | Physics-Informed ベイズ最適化 (PIBO) 実験クローズドループ（内部コア・非公開） |

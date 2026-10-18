@@ -1,5 +1,9 @@
 # RESEARCH_LOG.md — LW-HEA 原点徹底型自律探索ログ
 
+> [!NOTE]
+> **利用上の注意・免責事項**:
+> 本ログは自律型AIエージェントによる探索プロセスの記録です。記載されている合金組成、物理モデル、特許クレーム対比（FTO検討）はAIによる机上スクリーニングおよび簡易サンプル評価であり、法的な特許クリアランスや特定の工学的用途への適合性を保証するものではありません。
+
 **Mission**: 超高耐食性 × 軽量 (ρ≤4.5) × 高剛性 (E/ρ>25) を同時達成する LW-HEA のパレート最適組成同定
 **Charter (inviolable)**: n≥5 主元素, 5≤c_i≤35 at%, ΔS_mix≥1.5R, δ≤6.6%, Ω≥1.1, VEC<6.87, 単相BCC/B2ナノ整合
 
@@ -96,7 +100,7 @@ Google OKF (Open Knowledge Format) の考え方を応用し、580 ソース (ref
 - `05_wiki/hea-principles.md` — HEA 原点・4大コア効果
 - `05_wiki/lw-hea-design.md` — LW-HEA 設計指針 (密度・剛性・耐食)
 - `05_wiki/pareto-candidates.md` — パレート最適候補 Top 5
-- `05_wiki/fto-analysis.md` — 特許クリアランス
+- `05_wiki/fto-analysis.md` — 特許クレーム対比と探索的クリアランス検討（AI簡易サンプル・非保証）
 - `05_wiki/experimental-protocol.md` — 実験指示書 (秤量・熱処理)
 
 ---

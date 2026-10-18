@@ -29,6 +29,8 @@ As a result of this closed-loop exploration, promising candidate compositions we
 >    The proposed alloy compositions, physical models (Point Defect Model, corrosion prediction formulations, Pugh ratios, HPBI, RKI, etc.), and thermodynamic screening results are **computational screenings and working hypotheses** derived from literature data and physicochemical principles. They do not guarantee absolute accuracy, completeness, or fitness for specific engineering applications.
 > 2. **Need for Experimental Validation**:
 >    These findings precede experimental validation, including actual ingot casting (VAR), microstructural characterization (XRD/TEM/SEM), and wet electrochemical corrosion testing. They are presented as a starting point for experimentalists, collaborative research, or as a roadmap of possibilities for unexplored materials spaces.
+> 3. **Disclaimer Regarding Intellectual Property & Freedom-to-Operate (FTO)**:
+>    Any patent claim comparisons, design-around notes, or clearance assessments mentioned in this repository and its Wiki represent **exploratory, preliminary trial screenings performed automatically by an AI agent for illustrative purposes only**. They illustrate formal composition differences against a limited sample of patent publications and **do NOT constitute legal advice, patent opinions, non-infringement certifications, or guarantees of Freedom to Operate**. Commercial manufacturing, testing, sales, or patent filings must be preceded by rigorous prior-art searches and legal infringement opinions conducted by qualified patent attorneys.
 
 ---
 
@@ -102,7 +104,7 @@ Quantitative exploration of the vast materials space unlocked by relaxing initia
 | [`05_wiki/possibility-landscape-and-scenarios.md`](./05_wiki/possibility-landscape-and-scenarios.md) | Computational unexplored composition maps, 4 major white-space islands, If-Then scenarios, Top 25 catalog |
 | [`05_wiki/ablation-and-family-study.md`](./05_wiki/ablation-and-family-study.md) | Elemental ablation, exhaustive family analysis, and the 2nd Impossibility Theorem |
 | [`05_wiki/lw-hea-design.md`](./05_wiki/lw-hea-design.md) | LW-HEA design principles (density, stiffness, corrosion physics, and PDM semiconductor defect theory) |
-| [`05_wiki/fto-analysis.md`](./05_wiki/fto-analysis.md) | Patent clearance & claim-by-claim design-around analysis (against CN116497257B, etc.) |
+| [`05_wiki/fto-analysis.md`](./05_wiki/fto-analysis.md) | Exploratory patent claim comparison & preliminary FTO assessment sample (AI automated screening, non-guaranteed) |
 | [`05_wiki/pareto-candidates.md`](./05_wiki/pareto-candidates.md) | Pareto-optimal candidates (Top 5 & 7-track portfolio specifications) |
 | [`05_wiki/experimental-protocol.md`](./05_wiki/experimental-protocol.md) | 7-track experimental SOPs (sandwich charge melting, homogenization, water quenching, ASTM G5 electrochemical protocol) |
 | `Closed-Loop MI Core` | Physics-Informed Bayesian Optimization (PIBO) experimental loop (internal core, proprietary) |
