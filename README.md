@@ -1,6 +1,8 @@
 # LW-HEA Autonomous Discovery Suite & Open Knowledge Atlas
 ### 超軽量・高比剛性・超高耐食性 高エントロピー合金の自律探索基盤
 
+**日本語** | [English](README.en.md)
+
 ---
 
 ## 💡 軽量高エントロピー合金（LW-HEA）とは？
