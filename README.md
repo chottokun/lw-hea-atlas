@@ -3,6 +3,13 @@
 
 **日本語** | [English](README.en.md)
 
+[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-GitHub_Pages-2563eb?style=for-the-badge&logo=github&logoColor=white)](https://chottokun.github.io/lw-hea-atlas/)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> 🚀 **[Webダッシュボード（GitHub Pages）はこちらから直接開けます](https://chottokun.github.io/lw-hea-atlas/)**  
+> （※計算環境の構築不要。ブラウザから直接 3D パレート面、Top 25 カタログ、および秤量計算機を操作できます）
+
 ---
 
 ## 💡 軽量高エントロピー合金（LW-HEA）とは？
@@ -39,7 +46,7 @@
 > [!NOTE]
 > ### 🌐 本リポジトリの構成と提供形態
 > 本リポジトリは、自律型AIエージェントにより、材料の基本的な物理評価エンジン・探索シミュレーションを活用して得られたスクリーニング成果、多目的パレート最適候補、未踏組成マップ、および文献知見（ナレッジグラフ）を、ブラウザから閲覧可能なインタラクティブ・ダッシュボードやWiki形式のMarkdownドキュメントとして体系的にまとめた**公開データアトラス＆Webビューア**です。
-> 特別な計算環境を構築することなく、ブラウザから直接すべての組成データ、パレート面、秤量計算ツール、および技術考察ドキュメントをご利用いただけます。
+> 特別な計算環境を構築することなく、**[公開Webダッシュボード (GitHub Pages)](https://chottokun.github.io/lw-hea-atlas/)** から直接すべての組成データ、パレート面、秤量計算ツール、および技術考察ドキュメントをご利用いただけます。
 
 ---
 
@@ -122,16 +129,17 @@
 
 ## 💻 ダッシュボードスイート (v4.0 Final)
 
-ブラウザで直接閲覧可能（サーバー不要・完全オフライン対応）。
+> 🌐 **[オンライン・ダッシュボードを開く (https://chottokun.github.io/lw-hea-atlas/)](https://chottokun.github.io/lw-hea-atlas/)**  
+> （ブラウザで直接閲覧可能・サーバー不要・完全オフライン対応）
 
-- **[04_dashboard/index.html](./04_dashboard/index.html)** — 総合ポータル・統合ダッシュボード
+- **[04_dashboard/index.html (オンライン版)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/index.html)** ([ローカルファイル](./04_dashboard/index.html)) — 総合ポータル・統合ダッシュボード
   - 🏆 **Top 25 マスターカタログ & レーダープロファイル**: 7トラックおよび緩和シナリオ全候補の詳細仕様と物性バランス
   - 📊 **インタラクティブ 2D/3D パレート面 (Plotly)**: 密度 ρ vs 比弾性率 E/ρ vs 耐食性/Pugh比の多面的解析
   - 🎛️ **境界緩和シナリオ & 元素レバー感度**: 密度緩和（ρ ≤ 4.65 g/cm³）、low-Si微量添加、元素別偏微分効果の分析
   - ⚖️ **真空アーク溶解 (VAR) 揮散補正インゴット秤量計算機**: Al/Cr揮発ロス補正・実測記録・CSV出力
-- **[04_dashboard/catalog.html](./04_dashboard/catalog.html)** — 7トラック＆Top 25マスター仕様書（ソート・絞り込み・印刷対応）
-- **[04_dashboard/possibility_map.html](./04_dashboard/possibility_map.html)** — 3D 未踏組成空間＆4大ホワイトスペースアイランド・エクスプローラー
-- **[04_dashboard/weighing.html](./04_dashboard/weighing.html)** — 実験室現場専用・タッチ対応・チェックリスト式精密秤量アプリ
+- **[04_dashboard/catalog.html (オンライン版)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/catalog.html)** ([ローカルファイル](./04_dashboard/catalog.html)) — 7トラック＆Top 25マスター仕様書（ソート・絞り込み・印刷対応）
+- **[04_dashboard/possibility_map.html (オンライン版)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/possibility_map.html)** ([ローカルファイル](./04_dashboard/possibility_map.html)) — 3D 未踏組成空間＆4大ホワイトスペースアイランド・エクスプローラー
+- **[04_dashboard/weighing.html (オンライン版)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/weighing.html)** ([ローカルファイル](./04_dashboard/weighing.html)) — 実験室現場専用・タッチ対応・チェックリスト式精密秤量アプリ
 
 ---
 

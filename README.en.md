@@ -3,6 +3,13 @@
 
 [日本語 (Japanese)](README.md) | **English**
 
+[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-GitHub_Pages-2563eb?style=for-the-badge&logo=github&logoColor=white)](https://chottokun.github.io/lw-hea-atlas/)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> 🚀 **[Access the Live Web Dashboard on GitHub Pages](https://chottokun.github.io/lw-hea-atlas/)**  
+> *(No local server setup required. Directly explore 3D Pareto frontiers, master catalogs, and ingot weighing tools in your browser)*
+
 ---
 
 ## 💡 What are Light-Weight High-Entropy Alloys (LW-HEAs)?
@@ -39,7 +46,7 @@ As a result of this closed-loop exploration, unexpectedly intriguing design prop
 > [!NOTE]
 > ### 🌐 Repository Architecture & Delivery
 > This repository serves as an **Open Knowledge Atlas & Web Viewer**, systematically compiling screening results, multi-objective Pareto-optimal candidates, unexplored composition maps, and literature insights (knowledge graphs)—obtained by an autonomous AI agent leveraging fundamental materials physical evaluation engines and exploratory simulations—into interactive web dashboards and Wiki-style Markdown documents viewable directly in a browser.
-> All composition data, Pareto frontiers, ingot weighing tools, and technical documentation can be explored directly in any modern web browser without configuring complex local computational environments.
+> All composition data, Pareto frontiers, ingot weighing tools, and technical documentation can be explored directly in any modern web browser via the **[Public Web Dashboard (GitHub Pages)](https://chottokun.github.io/lw-hea-atlas/)** without configuring complex local computational environments.
 
 ---
 
@@ -122,16 +129,17 @@ Quantitative exploration of the vast materials space unlocked by relaxing initia
 
 ## 💻 Interactive Dashboard Suite (v4.0 Final)
 
-Viewable directly in any web browser (no local backend server required; fully offline compatible).
+> 🌐 **[Open the Live Web Dashboard (https://chottokun.github.io/lw-hea-atlas/)](https://chottokun.github.io/lw-hea-atlas/)**  
+> *(Directly viewable in any modern web browser; no backend server required; offline capable)*
 
-- **[04_dashboard/index.html](./04_dashboard/index.html)** — Comprehensive Portal & Integrated Dashboard
+- **[04_dashboard/index.html (Online Live)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/index.html)** ([Local File](./04_dashboard/index.html)) — Comprehensive Portal & Integrated Dashboard
   - 🏆 **Top 25 Master Catalog & Radar Profiles**: Detailed specifications and property tradeoffs for all 7-track and relaxation candidates
   - 📊 **Interactive 2D/3D Pareto Frontiers (Plotly)**: Multi-dimensional visualization of density ρ vs specific modulus E/ρ vs corrosion resistance / Pugh ratio
   - 🎛️ **Boundary Relaxation Scenarios & Sensitivity Sliders**: Density relaxation (ρ ≤ 4.65 g/cm³), low-Si micro-addition, and partial derivative sensitivity analyses
   - ⚖️ **Vacuum Arc Remelting (VAR) Volatilization-Corrected Ingot Weighing Calculator**: Real-time Al/Cr evaporation compensation, log records, and CSV export
-- **[04_dashboard/catalog.html](./04_dashboard/catalog.html)** — 7-Track & Top 25 Master Specifications (sorting, filtering, print-friendly)
-- **[04_dashboard/possibility_map.html](./04_dashboard/possibility_map.html)** — 3D Unexplored Composition Space & 4 White-Space Islands Explorer
-- **[04_dashboard/weighing.html](./04_dashboard/weighing.html)** — Shop-floor touch-friendly precision weighing checklist app
+- **[04_dashboard/catalog.html (Online Live)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/catalog.html)** ([Local File](./04_dashboard/catalog.html)) — 7-Track & Top 25 Master Specifications (sorting, filtering, print-friendly)
+- **[04_dashboard/possibility_map.html (Online Live)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/possibility_map.html)** ([Local File](./04_dashboard/possibility_map.html)) — 3D Unexplored Composition Space & 4 White-Space Islands Explorer
+- **[04_dashboard/weighing.html (Online Live)](https://chottokun.github.io/lw-hea-atlas/04_dashboard/weighing.html)** ([Local File](./04_dashboard/weighing.html)) — Shop-floor touch-friendly precision weighing checklist app
 
 ---
 
