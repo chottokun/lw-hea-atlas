@@ -38,7 +38,7 @@ As a result of this closed-loop exploration, unexpectedly intriguing design prop
 
 > [!NOTE]
 > ### 🌐 Repository Architecture & Delivery
-> This repository serves as an **Open Knowledge Atlas & Web Viewer**, compiling screening results, multi-objective Pareto-optimal candidates, unexplored composition maps, and literature insights (knowledge graphs) generated via autonomous AI agents and physical evaluation engines into interactive web dashboards and Wiki-style Markdown documents.
+> This repository serves as an **Open Knowledge Atlas & Web Viewer**, systematically compiling screening results, multi-objective Pareto-optimal candidates, unexplored composition maps, and literature insights (knowledge graphs)—obtained by an autonomous AI agent leveraging fundamental materials physical evaluation engines and exploratory simulations—into interactive web dashboards and Wiki-style Markdown documents viewable directly in a browser.
 > All composition data, Pareto frontiers, ingot weighing tools, and technical documentation can be explored directly in any modern web browser without configuring complex local computational environments.
 
 ---
