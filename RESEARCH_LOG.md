@@ -299,7 +299,7 @@ Youssef, AlCrTiV, Al35Ti30V15Cr10Nb10, Ti-6Al-4V, A7075, Cantor, Senkov, Jiang �
 
 ### 13.3 4大境界緩和 (If-Then) シナリオ解析
 - **Scenario A（$\rho \le 4.50 \to 4.65\text{ g/cm}^3$ 許容）**:
-  第2不可能性定理で棄却されていた「純バルブメタル 6元系（`Al-Ti-V-Cr-Nb-Zr`）」が一気に **505 件解禁**。代表解 `Al35 Ti35 V10 Cr10 Nb5 Zr5`（$\rho=4.53\text{ g/cm}^3$, $\delta=5.42\%$, $\text{silicide\_risk}=0$, $\log I=-7.73$）。
+  第2不可能性定理で棄却されていた「純バルブメタル 6元系（`Al-Ti-V-Cr-Nb-Zr`）」が一気に **505 件解禁**。代表解 `Al35 Ti35 V10 Cr10 Nb5 Zr5`（$\rho=4.53\text{ g/cm}^3$, $\delta=5.42\%$, `silicide_risk = 0`, $\log I=-7.73$）。
 - **Scenario B（低 Si 2.0〜3.5 at% 微量添加許容）**:
   全元素 $c_i \ge 5\text{ at}\%$ の縛りを緩め Si を $2.5\sim 3.0\text{ at}\%$ に微量添加化。格子歪みが $\delta < 6.0\%$ へ急減し、Nb/Mo フリー系（`Al-Ti-V-Cr-Mn-Si`）が **3,110 件解禁**。代表解 `Al34 Ti35 V14 Cr7 Mn7.5 Si2.5`（$\rho=4.48$, $\delta=5.85\%$, $\sigma_{T_m}=482\text{ K}$）。
 - **Scenario C（主元素上限 $c_i \le 40\text{ at}\%$ 許容）**: 中・高エントロピー境界領域の開拓。
