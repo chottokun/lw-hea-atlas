@@ -25,11 +25,13 @@ As a result of this closed-loop exploration, unexpectedly intriguing design prop
 > ### ⚠️ Research Nature & Disclaimer
 > The contents of this repository and the interactive dashboard represent an **exploratory and experimental computational study driven by autonomous AI agents and materials informatics (MI) techniques**.
 > 
-> 1. **Desk Screening and Working Hypotheses**:
+> 1. **Direct Use of Generative AI Outputs & Potential Hallucinations/Errata**:
+>    In alignment with the core spirit of this experiment (evaluating the raw exploration capabilities and practical boundaries of autonomous AI agents), **the generated reasoning traces, models, and texts produced by the AI models are published largely as-is without exhaustive manual post-editing**. Consequently, there may be instances of model hallucinations (ungrounded claims), misinterpretations of literature sources, numerical or formulaic errata, and logical inconsistencies. Users are strongly advised to independently verify all primary sources, figures, and formulations.
+> 2. **Desk Screening and Working Hypotheses**:
 >    The proposed alloy compositions, physical models (Point Defect Model, corrosion prediction formulations, Pugh ratios, HPBI, RKI, etc.), and thermodynamic screening results are **computational screenings and working hypotheses** derived from literature data and physicochemical principles. They do not guarantee absolute accuracy, completeness, or fitness for specific engineering applications.
-> 2. **Need for Experimental Validation**:
+> 3. **Need for Experimental Validation**:
 >    These findings precede experimental validation, including actual ingot casting (VAR), microstructural characterization (XRD/TEM/SEM), and wet electrochemical corrosion testing. They are presented as a starting point for experimentalists, collaborative research, or as a roadmap of possibilities for unexplored materials spaces.
-> 3. **Disclaimer Regarding Intellectual Property & Freedom-to-Operate (FTO)**:
+> 4. **Disclaimer Regarding Intellectual Property & Freedom-to-Operate (FTO)**:
 >    Any patent claim comparisons, design-around notes, or clearance assessments mentioned in this repository and its Wiki represent **exploratory, preliminary trial screenings performed automatically by an AI agent for illustrative purposes only**. They illustrate formal composition differences against a limited sample of patent publications and **do NOT constitute legal advice, patent opinions, non-infringement certifications, or guarantees of Freedom to Operate**.
 
 ---
